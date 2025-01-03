@@ -1,0 +1,67 @@
+/* Custom styles to complement Tailwind CSS */
+
+/* Smooth transitions for UI elements */
+.hidden {
+    display: none !important;
+}
+
+/* Custom focus styles */
+input:focus, textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Custom scrollbar for textareas */
+textarea {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+textarea::-webkit-scrollbar {
+    width: 8px;
+}
+
+textarea::-webkit-scrollbar-track {
+    background: #f7fafc;
+}
+
+textarea::-webkit-scrollbar-thumb {
+    background-color: #cbd5e0;
+    border-radius: 4px;
+}
+
+/* Hover effects for interactive elements */
+button:not(:disabled):hover {
+    transform: translateY(-1px);
+    transition: transform 0.2s ease;
+}
+
+/* Loading state for buttons */
+button.loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Success message animation */
+.success-message {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Error message styles */
+.error-message {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+} 

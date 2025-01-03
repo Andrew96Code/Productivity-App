@@ -1,0 +1,12 @@
+flask==3.0.0
+flask-cors==4.0.0
+supabase==2.0.3
+python-dotenv==1.0.0
+requests==2.31.0
+python-jose==3.3.0
+croniter==2.0.3
+psycopg2-binary==2.9.9
+PyJWT==2.8.0
+pandas==2.1.4
+matplotlib==3.8.2
+seaborn==0.13.2 

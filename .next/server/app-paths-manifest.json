@@ -1,0 +1,10 @@
+{
+  "/dashboard/page": "app/dashboard/page.js",
+  "/tasks-goals/tasks/page": "app/tasks-goals/tasks/page.js",
+  "/tools/pomodoro/page": "app/tools/pomodoro/page.js",
+  "/tools/page": "app/tools/page.js",
+  "/tools/voice/page": "app/tools/voice/page.js",
+  "/tools/ar/page": "app/tools/ar/page.js",
+  "/tools/notes/page": "app/tools/notes/page.js",
+  "/tools/timeblock/page": "app/tools/timeblock/page.js"
+}

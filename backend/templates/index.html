@@ -1,0 +1,3012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Productivity App</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-gray-100">
+    <!-- Welcome Section -->
+    <div class="bg-blue-600 text-white py-16">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <h1 class="text-4xl font-bold mb-4">Welcome to Daily Productivity</h1>
+            <p class="text-xl mb-8">Track your habits, learn something new, and improve every day.</p>
+        </div>
+    </div>
+
+    <!-- Auth Section -->
+    <div class="max-w-6xl mx-auto mt-8 px-4">
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Login Form -->
+            <div class="bg-white p-8 rounded-lg shadow-md">
+                <h2 class="text-2xl font-bold mb-6">Login</h2>
+                <div id="loginError" class="hidden mb-4 p-3 bg-red-100 text-red-700 rounded"></div>
+                <form onsubmit="login(event)">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" class="w-full px-3 py-2 border rounded-lg" required>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" class="w-full px-3 py-2 border rounded-lg" required>
+                    </div>
+                    <button type="submit" id="loginButton" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">Login</button>
+                </form>
+            </div>
+
+            <!-- Sign Up Form -->
+            <div class="bg-white p-8 rounded-lg shadow-md">
+                <h2 class="text-2xl font-bold mb-6">Sign Up</h2>
+                <div id="signupError" class="hidden mb-4 p-3 bg-red-100 text-red-700 rounded"></div>
+                <form onsubmit="signup(event)">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="signupEmail">Email</label>
+                        <input type="email" id="signupEmail" class="w-full px-3 py-2 border rounded-lg" required>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" class="w-full px-3 py-2 border rounded-lg" minlength="6" required>
+                        <p class="text-sm text-gray-600 mt-1">Password must be at least 6 characters long</p>
+                    </div>
+                    <button type="submit" id="signupButton" class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">Create Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content (hidden until logged in) -->
+    <div id="mainContent" class="max-w-6xl mx-auto mt-8 px-4 hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Daily Journal Section -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-bold mb-4">Daily Journal</h2>
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-gray-700 font-semibold">Morning Reflection</h3>
+                        <textarea id="morningPrompt" class="w-full p-2 border rounded-lg mt-2" rows="3" placeholder="What are your goals for today?"></textarea>
+                    </div>
+                    <button onclick="submitJournal('morning')" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Save Entry</button>
+                </div>
+            </div>
+
+            <!-- Quiz Section -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-bold mb-4">Daily Quiz</h2>
+                <div id="quizContent" class="space-y-4">
+                    <p id="quizQuestion" class="text-gray-700"></p>
+                    <div id="quizOptions" class="space-y-2"></div>
+                    <button onclick="submitQuiz()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Submit Answer</button>
+                </div>
+            </div>
+
+            <!-- Goals Section -->
+            <div class="bg-white p-6 rounded-lg shadow-md col-span-full">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Your Goals</h2>
+                    <button onclick="showGoalForm()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add New Goal</button>
+                </div>
+                
+                <!-- Goal Categories -->
+                <div class="flex space-x-4 mb-6">
+                    <button onclick="filterGoals('all')" class="px-4 py-2 rounded border hover:bg-gray-100 goal-filter active">All</button>
+                    <button onclick="filterGoals('health')" class="px-4 py-2 rounded border hover:bg-gray-100 goal-filter">Health</button>
+                    <button onclick="filterGoals('finance')" class="px-4 py-2 rounded border hover:bg-gray-100 goal-filter">Finance</button>
+                    <button onclick="filterGoals('productivity')" class="px-4 py-2 rounded border hover:bg-gray-100 goal-filter">Productivity</button>
+                    <button onclick="filterGoals('learning')" class="px-4 py-2 rounded border hover:bg-gray-100 goal-filter">Learning</button>
+                </div>
+                
+                <!-- Goals List -->
+                <div id="goalsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Goals will be dynamically added here -->
+                </div>
+            </div>
+
+            <!-- Add this after the Goals Section and before Points & Progress -->
+            <div class="bg-white p-6 rounded-lg shadow-md col-span-full">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Daily Habits</h2>
+                    <button onclick="showHabitForm()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Add New Habit</button>
+                </div>
+                
+                <!-- Habit Categories -->
+                <div class="flex space-x-4 mb-6">
+                    <button onclick="filterHabits('all')" class="px-4 py-2 rounded border hover:bg-gray-100 habit-filter active">All</button>
+                    <button onclick="filterHabits('health')" class="px-4 py-2 rounded border hover:bg-gray-100 habit-filter">Health</button>
+                    <button onclick="filterHabits('finance')" class="px-4 py-2 rounded border hover:bg-gray-100 habit-filter">Finance</button>
+                    <button onclick="filterHabits('productivity')" class="px-4 py-2 rounded border hover:bg-gray-100 habit-filter">Productivity</button>
+                    <button onclick="filterHabits('learning')" class="px-4 py-2 rounded border hover:bg-gray-100 habit-filter">Learning</button>
+                </div>
+                
+                <!-- Habits List -->
+                <div id="habitsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Habits will be dynamically added here -->
+                </div>
+            </div>
+
+            <!-- Add this after the Habits Section and before Points & Progress -->
+            <div class="bg-white p-6 rounded-lg shadow-md col-span-full">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Financial Dashboard</h2>
+                    <div class="space-x-4">
+                        <select id="financePeriod" onchange="loadFinancialData()" class="px-3 py-2 border rounded">
+                            <option value="month">This Month</option>
+                            <option value="year">This Year</option>
+                            <option value="all">All Time</option>
+                        </select>
+                        <button onclick="showTransactionForm()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add Transaction</button>
+                    </div>
+                </div>
+                
+                <!-- Financial Summary -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h3 class="text-sm font-semibold text-green-700">Income</h3>
+                        <p class="text-2xl font-bold text-green-600" id="totalIncome">$0</p>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg">
+                        <h3 class="text-sm font-semibold text-red-700">Expenses</h3>
+                        <p class="text-2xl font-bold text-red-600" id="totalExpenses">$0</p>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h3 class="text-sm font-semibold text-blue-700">Savings</h3>
+                        <p class="text-2xl font-bold text-blue-600" id="totalSavings">$0</p>
+                        <p class="text-sm text-blue-600" id="savingsRate">0% of income</p>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <h3 class="text-sm font-semibold text-purple-700">Investments</h3>
+                        <p class="text-2xl font-bold text-purple-600" id="totalInvestments">$0</p>
+                    </div>
+                </div>
+                
+                <!-- Transactions List -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Recent Transactions</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsList" class="divide-y divide-gray-200">
+                                <!-- Transactions will be dynamically added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add this after the Financial Dashboard and before Points & Progress -->
+            <div class="bg-white p-6 rounded-lg shadow-md col-span-full">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Prize Draws</h2>
+                    <div class="text-sm text-gray-600">
+                        Your Points: <span id="prizeDrawPoints" class="font-bold">0</span>
+                    </div>
+                </div>
+                
+                <!-- Active Draws -->
+                <div id="activeDraws" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Draws will be dynamically added here -->
+                </div>
+            </div>
+
+            <!-- Add this after the Prize Draws section and before Points & Progress -->
+            <div class="bg-white p-6 rounded-lg shadow-md col-span-full">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Achievements</h2>
+                    <div class="text-sm text-gray-600">
+                        Completed: <span id="achievementsCompleted" class="font-bold">0</span>/<span id="achievementsTotal" class="font-bold">0</span>
+                    </div>
+                </div>
+                
+                <!-- Achievement Categories -->
+                <div class="flex space-x-4 mb-6">
+                    <button onclick="filterAchievements('all')" class="px-4 py-2 rounded border hover:bg-gray-100 achievement-filter active">All</button>
+                    <button onclick="filterAchievements('habits')" class="px-4 py-2 rounded border hover:bg-gray-100 achievement-filter">Habits</button>
+                    <button onclick="filterAchievements('goals')" class="px-4 py-2 rounded border hover:bg-gray-100 achievement-filter">Goals</button>
+                    <button onclick="filterAchievements('quiz')" class="px-4 py-2 rounded border hover:bg-gray-100 achievement-filter">Quiz</button>
+                    <button onclick="filterAchievements('finance')" class="px-4 py-2 rounded border hover:bg-gray-100 achievement-filter">Finance</button>
+                    <button onclick="filterAchievements('journaling')" class="px-4 py-2 rounded border hover:bg-gray-100 achievement-filter">Journaling</button>
+                </div>
+                
+                <!-- Achievements Grid -->
+                <div id="achievementsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Achievements will be dynamically added here -->
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md col-span-full">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Rewards Shop</h2>
+                    <div class="text-sm text-gray-600">
+                        Your Points: <span id="rewardsPoints" class="font-bold">0</span>
+                    </div>
+                </div>
+                
+                <!-- Rewards Grid -->
+                <div id="rewardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Rewards will be dynamically added here -->
+                </div>
+            </div>
+
+            <!-- Prize Draw Entry Modal -->
+            <div id="drawEntryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+                <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+                    <h3 class="text-xl font-bold mb-4">Enter Prize Draw</h3>
+                    <div id="drawDetails" class="mb-4">
+                        <!-- Draw details will be added here -->
+                    </div>
+                    <form onsubmit="submitDrawEntry(event)" class="space-y-4">
+                        <input type="hidden" id="selectedDrawId">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="ticketCount">Number of Tickets</label>
+                            <input type="number" id="ticketCount" class="w-full px-3 py-2 border rounded-lg" min="1" value="1" required>
+                            <p class="text-sm text-gray-600 mt-1">Points required: <span id="pointsRequired">0</span></p>
+                        </div>
+                        <div class="flex justify-end space-x-4">
+                            <button type="button" onclick="hideDrawEntryModal()" class="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
+                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Enter Draw</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Points & Progress -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-bold mb-4">Your Progress</h2>
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-gray-700">Total Points:</p>
+                        <p id="totalPoints" class="text-2xl font-bold text-blue-500">0</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-700">Current Streak:</p>
+                        <p id="currentStreak" class="text-2xl font-bold text-green-500">0 days</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Focus Timer Section -->
+            <div class="bg-white p-6 rounded-lg shadow-md col-span-full">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Focus Timer</h2>
+                    <div class="flex items-center space-x-4">
+                        <select id="focusDuration" class="px-3 py-2 border rounded">
+                            <option value="25">25 minutes</option>
+                            <option value="45">45 minutes</option>
+                            <option value="60">60 minutes</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                        <button id="startFocusBtn" onclick="startFocusSession()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                            Start Focus Session
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Timer Display -->
+                <div id="timerDisplay" class="hidden">
+                    <div class="flex flex-col items-center justify-center py-8">
+                        <div class="text-6xl font-bold text-gray-800 mb-4" id="timeRemaining">25:00</div>
+                        <div class="space-x-4">
+                            <button onclick="pauseTimer()" id="pauseBtn" class="bg-yellow-500 text-white px-6 py-2 rounded hover:bg-yellow-600">
+                                Pause
+                            </button>
+                            <button onclick="stopTimer()" class="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600">
+                                Stop
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Focus History -->
+                <div class="mt-8">
+                    <h3 class="text-lg font-semibold mb-4">Recent Focus Sessions</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Points</th>
+                                </tr>
+                            </thead>
+                            <tbody id="focusHistory" class="divide-y divide-gray-200">
+                                <!-- Focus sessions will be dynamically added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Duration Modal -->
+            <div id="customDurationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+                <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+                    <h3 class="text-xl font-bold mb-4">Set Custom Duration</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="customMinutes">Minutes</label>
+                            <input type="number" id="customMinutes" class="w-full px-3 py-2 border rounded-lg" min="1" max="180" value="30">
+                            <p class="text-sm text-gray-600 mt-1">Enter a duration between 1 and 180 minutes</p>
+                        </div>
+                        <div class="flex justify-end space-x-4">
+                            <button onclick="hideCustomDurationModal()" class="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
+                            <button onclick="setCustomDuration()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Set Duration</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mood Tracking Section -->
+            <div class="bg-white p-6 rounded-lg shadow-md col-span-full">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Mood Tracking</h2>
+                    <div class="flex items-center space-x-4">
+                        <select id="moodPeriod" onchange="loadMoodData()" class="px-3 py-2 border rounded">
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="year">This Year</option>
+                        </select>
+                        <button onclick="showMoodForm()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                            Log Mood
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mood Analytics -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Average Scores -->
+                    <div class="bg-gradient-to-br from-purple-50 to-blue-50 p-4 rounded-lg border border-purple-100">
+                        <h3 class="text-lg font-semibold mb-4">Average Scores</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-sm text-gray-600">Mood Rating</p>
+                                <div class="flex items-center">
+                                    <p class="text-2xl font-bold text-purple-600" id="averageMood">0</p>
+                                    <p class="text-sm text-gray-500 ml-2">/ 5</p>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Energy Level</p>
+                                <div class="flex items-center">
+                                    <p class="text-2xl font-bold text-blue-600" id="averageEnergy">0</p>
+                                    <p class="text-sm text-gray-500 ml-2">/ 5</p>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Sleep Hours</p>
+                                <p class="text-2xl font-bold text-indigo-600" id="averageSleep">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mood Distribution -->
+                    <div class="bg-gradient-to-br from-green-50 to-blue-50 p-4 rounded-lg border border-green-100">
+                        <h3 class="text-lg font-semibold mb-4">Mood Distribution</h3>
+                        <div id="moodDistribution" class="space-y-3">
+                            <!-- Mood distribution will be added here -->
+                        </div>
+                    </div>
+
+                    <!-- Activity Impact -->
+                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-4 rounded-lg border border-yellow-100">
+                        <h3 class="text-lg font-semibold mb-4">Activity Impact</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 mb-2">Most Common Activities</p>
+                                <div id="commonActivities" class="space-y-2">
+                                    <!-- Common activities will be added here -->
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 mb-2">Best Mood Activities</p>
+                                <div id="bestActivities" class="space-y-2">
+                                    <!-- Best mood activities will be added here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mood History -->
+                <div class="mt-8">
+                    <h3 class="text-lg font-semibold mb-4">Recent Entries</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mood</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Energy</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sleep</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Activities</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="moodHistory" class="divide-y divide-gray-200">
+                                <!-- Mood entries will be dynamically added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mood Entry Form Modal -->
+            <div id="moodFormModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+                <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+                    <h3 class="text-xl font-bold mb-4">Log Your Mood</h3>
+                    <form onsubmit="submitMoodEntry(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">How are you feeling?</label>
+                            <div class="flex justify-between">
+                                <button type="button" onclick="selectMood(1)" class="mood-btn p-2 rounded hover:bg-gray-100">😢</button>
+                                <button type="button" onclick="selectMood(2)" class="mood-btn p-2 rounded hover:bg-gray-100">😕</button>
+                                <button type="button" onclick="selectMood(3)" class="mood-btn p-2 rounded hover:bg-gray-100">😐</button>
+                                <button type="button" onclick="selectMood(4)" class="mood-btn p-2 rounded hover:bg-gray-100">🙂</button>
+                                <button type="button" onclick="selectMood(5)" class="mood-btn p-2 rounded hover:bg-gray-100">😄</button>
+                            </div>
+                            <input type="hidden" id="moodRating" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="moodType">What type of mood?</label>
+                            <select id="moodType" class="w-full px-3 py-2 border rounded-lg" required>
+                                <option value="happy">Happy</option>
+                                <option value="excited">Excited</option>
+                                <option value="content">Content</option>
+                                <option value="tired">Tired</option>
+                                <option value="stressed">Stressed</option>
+                                <option value="anxious">Anxious</option>
+                                <option value="sad">Sad</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Energy Level</label>
+                            <div class="flex justify-between">
+                                <button type="button" onclick="selectEnergy(1)" class="energy-btn p-2 rounded hover:bg-gray-100">⚡</button>
+                                <button type="button" onclick="selectEnergy(2)" class="energy-btn p-2 rounded hover:bg-gray-100">⚡⚡</button>
+                                <button type="button" onclick="selectEnergy(3)" class="energy-btn p-2 rounded hover:bg-gray-100">⚡⚡⚡</button>
+                                <button type="button" onclick="selectEnergy(4)" class="energy-btn p-2 rounded hover:bg-gray-100">⚡⚡⚡⚡</button>
+                                <button type="button" onclick="selectEnergy(5)" class="energy-btn p-2 rounded hover:bg-gray-100">⚡⚡⚡⚡⚡</button>
+                            </div>
+                            <input type="hidden" id="energyLevel">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="sleepHours">Hours of Sleep</label>
+                            <input type="number" id="sleepHours" class="w-full px-3 py-2 border rounded-lg" min="0" max="24" step="0.5">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Activities</label>
+                            <div class="flex flex-wrap gap-2" id="activityTags">
+                                <button type="button" onclick="toggleActivity('exercise')" class="activity-tag px-3 py-1 rounded border hover:bg-gray-100">Exercise</button>
+                                <button type="button" onclick="toggleActivity('work')" class="activity-tag px-3 py-1 rounded border hover:bg-gray-100">Work</button>
+                                <button type="button" onclick="toggleActivity('social')" class="activity-tag px-3 py-1 rounded border hover:bg-gray-100">Social</button>
+                                <button type="button" onclick="toggleActivity('hobby')" class="activity-tag px-3 py-1 rounded border hover:bg-gray-100">Hobby</button>
+                                <button type="button" onclick="toggleActivity('reading')" class="activity-tag px-3 py-1 rounded border hover:bg-gray-100">Reading</button>
+                                <button type="button" onclick="toggleActivity('meditation')" class="activity-tag px-3 py-1 rounded border hover:bg-gray-100">Meditation</button>
+                                <button type="button" onclick="toggleActivity('nature')" class="activity-tag px-3 py-1 rounded border hover:bg-gray-100">Nature</button>
+                                <button type="button" onclick="toggleActivity('family')" class="activity-tag px-3 py-1 rounded border hover:bg-gray-100">Family</button>
+                            </div>
+                            <input type="hidden" id="selectedActivities">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="moodNotes">Notes</label>
+                            <textarea id="moodNotes" class="w-full px-3 py-2 border rounded-lg" rows="3"></textarea>
+                        </div>
+                        <div class="flex justify-end space-x-4">
+                            <button type="button" onclick="hideMoodForm()" class="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
+                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Save Entry</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Journal Section -->
+            <div id="journalSection" class="section">
+                <div class="section-header">
+                    <h2>Journal</h2>
+                    <button onclick="showJournalForm('morning')" class="btn btn-primary">Morning Entry</button>
+                    <button onclick="showJournalForm('evening')" class="btn btn-primary">Evening Entry</button>
+                    <button onclick="showJournalForm('custom')" class="btn btn-primary">Custom Entry</button>
+                </div>
+                
+                <!-- Journal Form Modal -->
+                <div id="journalFormModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close" onclick="hideJournalForm()">&times;</span>
+                        <h3>New Journal Entry</h3>
+                        <form id="journalForm" onsubmit="submitJournalEntry(event)">
+                            <input type="hidden" id="journalPromptType" name="promptType">
+                            
+                            <div class="form-group">
+                                <label for="journalPrompt">Prompt:</label>
+                                <select id="journalPrompt" name="prompt" class="form-control" required>
+                                    <!-- Prompts will be loaded dynamically -->
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="journalResponse">Your Response:</label>
+                                <textarea id="journalResponse" name="response" class="form-control" rows="5" required></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="journalMood">Mood Rating (1-5):</label>
+                                <input type="number" id="journalMood" name="mood" min="1" max="5" class="form-control">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="journalTags">Tags (comma-separated):</label>
+                                <input type="text" id="journalTags" name="tags" class="form-control" placeholder="e.g., work, health, family">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Save Entry</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Journal Entries Display -->
+                <div id="journalEntries" class="entries-container">
+                    <!-- Entries will be loaded dynamically -->
+                </div>
+                
+                <!-- Journal Analytics -->
+                <div id="journalAnalytics" class="analytics-container">
+                    <h3>Journal Analytics</h3>
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <h4>Total Entries</h4>
+                            <p id="totalEntries">0</p>
+                        </div>
+                        <div class="analytics-card">
+                            <h4>Current Streak</h4>
+                            <p id="journalStreak">0 days</p>
+                        </div>
+                        <div class="analytics-card">
+                            <h4>Mood Trend</h4>
+                            <div id="moodTrendChart"></div>
+                        </div>
+                        <div class="analytics-card">
+                            <h4>Common Tags</h4>
+                            <div id="commonTags"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Achievements Section -->
+            <div id="achievements-section" class="section">
+                <h2>Achievements</h2>
+                <div class="achievements-stats">
+                    <div class="stat-card">
+                        <h3>Total Progress</h3>
+                        <div class="progress-circle">
+                            <span id="total-completion-percentage">0%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Achievements Completed</h3>
+                        <div id="completed-count">0 / 0</div>
+                    </div>
+                </div>
+                
+                <div class="category-filters">
+                    <button class="category-btn active" data-category="all">All</button>
+                    <button class="category-btn" data-category="Daily">Daily</button>
+                    <button class="category-btn" data-category="Focus">Focus</button>
+                    <button class="category-btn" data-category="Goals">Goals</button>
+                    <button class="category-btn" data-category="Habits">Habits</button>
+                    <button class="category-btn" data-category="Journal">Journal</button>
+                    <button class="category-btn" data-category="Mood">Mood</button>
+                    <button class="category-btn" data-category="Points">Points</button>
+                    <button class="category-btn" data-category="Tasks">Tasks</button>
+                    <button class="category-btn" data-category="Rewards">Rewards</button>
+                    <button class="category-btn" data-category="Streak">Streak</button>
+                </div>
+                
+                <div id="achievements-grid" class="achievements-grid">
+                    <!-- Achievements will be loaded here -->
+                </div>
+            </div>
+
+            <style>
+            .achievements-section {
+                padding: 20px;
+            }
+
+            .achievements-stats {
+                display: flex;
+                gap: 20px;
+                margin-bottom: 20px;
+            }
+
+            .stat-card {
+                background: #fff;
+                border-radius: 10px;
+                padding: 20px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                flex: 1;
+                text-align: center;
+            }
+
+            .progress-circle {
+                width: 100px;
+                height: 100px;
+                border-radius: 50%;
+                background: conic-gradient(var(--primary-color) var(--progress), #eee var(--progress));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 10px auto;
+            }
+
+            .category-filters {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+
+            .category-btn {
+                padding: 8px 16px;
+                border: none;
+                border-radius: 20px;
+                background: #eee;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .category-btn.active {
+                background: var(--primary-color);
+                color: white;
+            }
+
+            .achievements-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+
+            .achievement-card {
+                background: #fff;
+                border-radius: 10px;
+                padding: 20px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                transition: transform 0.3s ease;
+            }
+
+            .achievement-card:hover {
+                transform: translateY(-5px);
+            }
+
+            .achievement-icon {
+                font-size: 2em;
+                margin-bottom: 10px;
+            }
+
+            .achievement-progress {
+                margin-top: 10px;
+                background: #eee;
+                border-radius: 10px;
+                height: 10px;
+                overflow: hidden;
+            }
+
+            .progress-bar {
+                height: 100%;
+                background: var(--primary-color);
+                width: var(--progress);
+                transition: width 0.3s ease;
+            }
+
+            .completed {
+                background: #e8f5e9;
+                border: 2px solid #4caf50;
+            }
+
+            .completed .achievement-icon {
+                color: #4caf50;
+            }
+            </style>
+
+            <script>
+            // Achievements functionality
+            async function loadAchievements(category = 'all') {
+                try {
+                    const userId = localStorage.getItem('userId');
+                    if (!userId) return;
+                    
+                    const response = await fetch(`/achievements?user_id=${userId}&category=${category}`);
+                    if (!response.ok) throw new Error('Failed to load achievements');
+                    
+                    const data = await response.json();
+                    if (!data.success) throw new Error(data.error);
+                    
+                    displayAchievements(data.data);
+                    
+                    // Load achievement stats
+                    const statsResponse = await fetch(`/achievements/stats?user_id=${userId}`);
+                    if (!statsResponse.ok) throw new Error('Failed to load achievement stats');
+                    
+                    const statsData = await statsResponse.json();
+                    if (!statsData.success) throw new Error(statsData.error);
+                    
+                    updateAchievementStats(statsData.data);
+                    
+                } catch (error) {
+                    console.error('Error loading achievements:', error);
+                    showNotification('Error loading achievements', 'error');
+                }
+            }
+
+            function displayAchievements(achievements) {
+                const grid = document.getElementById('achievements-grid');
+                grid.innerHTML = '';
+                
+                achievements.forEach(achievement => {
+                    const card = document.createElement('div');
+                    card.className = `achievement-card ${achievement.completed ? 'completed' : ''}`;
+                    
+                    const progressPercent = Math.min(100, (achievement.progress / achievement.requirement_value) * 100);
+                    
+                    card.innerHTML = `
+                        <div class="achievement-icon">${achievement.badge_icon}</div>
+                        <h3>${achievement.title}</h3>
+                        <p>${achievement.description}</p>
+                        <div class="achievement-progress">
+                            <div class="progress-bar" style="--progress: ${progressPercent}%"></div>
+                        </div>
+                        <div class="achievement-details">
+                            <span>Progress: ${achievement.progress}/${achievement.requirement_value}</span>
+                            <span>Points: ${achievement.points_reward}</span>
+                        </div>
+                    `;
+                    
+                    grid.appendChild(card);
+                });
+            }
+
+            function updateAchievementStats(stats) {
+                document.getElementById('total-completion-percentage').textContent = `${stats.completion_percentage}%`;
+                document.getElementById('completed-count').textContent = `${stats.completed_achievements} / ${stats.total_achievements}`;
+                
+                document.querySelector('.progress-circle').style.setProperty('--progress', `${stats.completion_percentage}%`);
+            }
+
+            // Category filter functionality
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    loadAchievements(btn.dataset.category);
+                });
+            });
+
+            // Load achievements when the page loads
+            document.addEventListener('DOMContentLoaded', () => {
+                loadAchievements();
+            });
+            </script>
+
+            <!-- Stats Visualization Section -->
+            <div class="bg-white p-6 rounded-lg shadow-md col-span-full">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Progress & Stats</h2>
+                    <select id="statsPeriod" onchange="loadStats()" class="px-3 py-2 border rounded">
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="year">This Year</option>
+                        <option value="all">All Time</option>
+                    </select>
+                </div>
+
+                <!-- Overview Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-100">
+                        <h3 class="text-sm font-semibold text-blue-700">Total Points</h3>
+                        <p class="text-2xl font-bold text-blue-600" id="statsPoints">0</p>
+                        <p class="text-sm text-blue-600" id="pointsChange">+0 this period</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border border-green-100">
+                        <h3 class="text-sm font-semibold text-green-700">Goals Completed</h3>
+                        <p class="text-2xl font-bold text-green-600" id="statsGoals">0</p>
+                        <p class="text-sm text-green-600" id="goalsChange">0 in progress</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-100">
+                        <h3 class="text-sm font-semibold text-purple-700">Habits Streak</h3>
+                        <p class="text-2xl font-bold text-purple-600" id="statsStreak">0</p>
+                        <p class="text-sm text-purple-600" id="streakChange">Longest: 0</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-orange-50 to-amber-50 p-4 rounded-lg border border-orange-100">
+                        <h3 class="text-sm font-semibold text-orange-700">Focus Time</h3>
+                        <p class="text-2xl font-bold text-orange-600" id="statsFocus">0h</p>
+                        <p class="text-sm text-orange-600" id="focusChange">Avg: 0h/day</p>
+                    </div>
+                </div>
+
+                <!-- Activity Timeline -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold mb-4">Activity Timeline</h3>
+                    <div class="relative">
+                        <div class="absolute top-0 left-0 w-full h-full bg-gray-50 rounded-lg"></div>
+                        <div id="activityTimeline" class="relative h-40">
+                            <!-- Timeline will be rendered here -->
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-500 mt-2">
+                            <span>Mon</span>
+                            <span>Tue</span>
+                            <span>Wed</span>
+                            <span>Thu</span>
+                            <span>Fri</span>
+                            <span>Sat</span>
+                            <span>Sun</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Performance -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Achievement Progress -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Achievement Progress</h3>
+                        <div id="achievementProgress" class="space-y-4">
+                            <!-- Achievement progress bars will be added here -->
+                        </div>
+                    </div>
+
+                    <!-- Habit Completion Rates -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Habit Completion Rates</h3>
+                        <div id="habitCompletion" class="space-y-4">
+                            <!-- Habit completion rates will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+            // Stats functionality
+            async function loadStats() {
+                const period = document.getElementById('statsPeriod').value;
+                const userId = localStorage.getItem('userId');
+                if (!userId) return;
+
+                try {
+                    const [pointsStats, goalsStats, habitsStats, focusStats, activityStats] = await Promise.all([
+                        fetch(`/stats/points?user_id=${userId}&period=${period}`).then(r => r.json()),
+                        fetch(`/stats/goals?user_id=${userId}&period=${period}`).then(r => r.json()),
+                        fetch(`/stats/habits?user_id=${userId}&period=${period}`).then(r => r.json()),
+                        fetch(`/stats/focus?user_id=${userId}&period=${period}`).then(r => r.json()),
+                        fetch(`/stats/activity?user_id=${userId}&period=${period}`).then(r => r.json())
+                    ]);
+
+                    updateOverviewStats(pointsStats.data, goalsStats.data, habitsStats.data, focusStats.data);
+                    renderActivityTimeline(activityStats.data);
+                    updateCategoryPerformance(pointsStats.data, goalsStats.data, habitsStats.data);
+                } catch (error) {
+                    console.error('Error loading stats:', error);
+                    showNotification('Error loading statistics', 'error');
+                }
+            }
+
+            function updateOverviewStats(points, goals, habits, focus) {
+                // Update points card
+                document.getElementById('statsPoints').textContent = points.total;
+                document.getElementById('pointsChange').textContent = 
+                    `+${points.change} this ${document.getElementById('statsPeriod').value}`;
+
+                // Update goals card
+                document.getElementById('statsGoals').textContent = goals.completed;
+                document.getElementById('goalsChange').textContent = 
+                    `${goals.in_progress} in progress`;
+
+                // Update habits card
+                document.getElementById('statsStreak').textContent = habits.current_streak;
+                document.getElementById('streakChange').textContent = 
+                    `Longest: ${habits.longest_streak}`;
+
+                // Update focus card
+                const hours = Math.floor(focus.total_minutes / 60);
+                document.getElementById('statsFocus').textContent = `${hours}h`;
+                document.getElementById('focusChange').textContent = 
+                    `Avg: ${Math.round(focus.average_daily_minutes / 60)}h/day`;
+            }
+
+            function renderActivityTimeline(activities) {
+                const timeline = document.getElementById('activityTimeline');
+                timeline.innerHTML = '';
+
+                const maxHeight = timeline.clientHeight;
+                const dayWidth = (timeline.clientWidth - 14) / 7; // -14 for padding
+
+                activities.forEach((day, index) => {
+                    const dayColumn = document.createElement('div');
+                    dayColumn.className = 'absolute bottom-0 flex flex-col justify-end';
+                    dayColumn.style.left = `${index * dayWidth}px`;
+                    dayColumn.style.width = `${dayWidth - 4}px`; // -4 for gap
+
+                    // Create bars for each activity type
+                    const types = ['goals', 'habits', 'focus', 'mood'];
+                    const colors = {
+                        goals: 'bg-green-400',
+                        habits: 'bg-purple-400',
+                        focus: 'bg-orange-400',
+                        mood: 'bg-blue-400'
+                    };
+
+                    types.forEach(type => {
+                        if (day[type] > 0) {
+                            const height = (day[type] / day.total) * maxHeight;
+                            const bar = document.createElement('div');
+                            bar.className = `${colors[type]} rounded-t`;
+                            bar.style.height = `${height}px`;
+                            bar.title = `${type}: ${day[type]} activities`;
+                            dayColumn.appendChild(bar);
+                        }
+                    });
+
+                    timeline.appendChild(dayColumn);
+                });
+            }
+
+            function updateCategoryPerformance(points, goals, habits) {
+                // Update achievement progress
+                const achievementContainer = document.getElementById('achievementProgress');
+                achievementContainer.innerHTML = '';
+
+                Object.entries(points.category_points).forEach(([category, data]) => {
+                    const progressBar = document.createElement('div');
+                    progressBar.className = 'space-y-1';
+                    progressBar.innerHTML = `
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">${category}</span>
+                            <span class="text-gray-600">${data.earned}/${data.available} pts</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="h-2 rounded-full bg-blue-500" 
+                                 style="width: ${(data.earned / data.available * 100)}%"></div>
+                        </div>
+                    `;
+                    achievementContainer.appendChild(progressBar);
+                });
+
+                // Update habit completion rates
+                const habitContainer = document.getElementById('habitCompletion');
+                habitContainer.innerHTML = '';
+
+                Object.entries(habits.completion_rates).forEach(([habit, rate]) => {
+                    const progressBar = document.createElement('div');
+                    progressBar.className = 'space-y-1';
+                    progressBar.innerHTML = `
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">${habit}</span>
+                            <span class="text-gray-600">${Math.round(rate * 100)}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="h-2 rounded-full bg-purple-500" 
+                                 style="width: ${rate * 100}%"></div>
+                        </div>
+                    `;
+                    habitContainer.appendChild(progressBar);
+                });
+            }
+
+            // Load stats when the page loads
+            document.addEventListener('DOMContentLoaded', () => {
+                if (currentUser) {
+                    loadStats();
+                }
+            });
+            </script>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let currentQuiz = null;
+        let currentGoalFilter = 'all';
+        let currentHabitFilter = 'all';
+        let categories = {};
+        let currentAchievementFilter = 'all';
+        let achievements = [];
+        let rewards = [];
+        let currentFocusSession = null;
+        let timerInterval = null;
+        let timeLeft = 0;
+        let isPaused = false;
+
+        // Helper functions
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
+
+        function hideError(elementId) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.classList.add('hidden');
+        }
+
+        function setButtonLoading(buttonId, isLoading) {
+            const button = document.getElementById(buttonId);
+            button.disabled = isLoading;
+            button.textContent = isLoading ? 'Please wait...' : buttonId === 'loginButton' ? 'Login' : 'Create Account';
+            button.classList.toggle('opacity-50', isLoading);
+        }
+
+        // Auth functions
+        async function login(event) {
+            event.preventDefault();
+            hideError('loginError');
+            setButtonLoading('loginButton', true);
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentUser = { email, id: data.data.user.id };
+                    showMainContent();
+                } else {
+                    showError('loginError', data.error || 'Login failed. Please check your credentials.');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('loginError', 'An error occurred during login. Please try again.');
+            } finally {
+                setButtonLoading('loginButton', false);
+            }
+        }
+
+        async function signup(event) {
+            event.preventDefault();
+            hideError('signupError');
+            setButtonLoading('signupButton', true);
+
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            try {
+                const response = await fetch('/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Account created successfully! Please login.');
+                    document.getElementById('signupEmail').value = '';
+                    document.getElementById('signupPassword').value = '';
+                } else {
+                    showError('signupError', data.error || 'Signup failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                showError('signupError', 'An error occurred during signup. Please try again.');
+            } finally {
+                setButtonLoading('signupButton', false);
+            }
+        }
+
+        function showMainContent() {
+            document.querySelector('.grid.md\\:grid-cols-2').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+            loadUserData();
+            loadQuiz();
+            loadGoals();
+            loadHabits();
+            loadFinancialData();
+            loadPrizeDraws();
+            loadAchievements();
+            loadRewards();
+        }
+
+        // Journal functions
+        async function submitJournal(promptType) {
+            const response = document.getElementById(`${promptType}Prompt`).value;
+            
+            try {
+                const result = await fetch('/journaling/log', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUser.id,
+                        prompt_type: promptType,
+                        response
+                    })
+                });
+
+                if (result.ok) {
+                    alert('Journal entry saved successfully!');
+                    document.getElementById(`${promptType}Prompt`).value = '';
+                } else {
+                    alert('Failed to save journal entry.');
+                }
+            } catch (error) {
+                console.error('Journal submission error:', error);
+                alert('An error occurred while saving your journal entry.');
+            }
+        }
+
+        // Quiz functions
+        async function loadQuiz() {
+            try {
+                const response = await fetch('/quiz/questions?limit=1');
+                const data = await response.json();
+                if (data.data && data.data.length > 0) {
+                    currentQuiz = data.data[0];
+                    displayQuiz(currentQuiz);
+                }
+            } catch (error) {
+                console.error('Quiz loading error:', error);
+            }
+        }
+
+        function displayQuiz(quiz) {
+            document.getElementById('quizQuestion').textContent = quiz.question;
+            const optionsContainer = document.getElementById('quizOptions');
+            optionsContainer.innerHTML = '';
+            
+            // Handle options whether they're a string or array
+            let options = quiz.options;
+            if (typeof options === 'string') {
+                try {
+                    options = JSON.parse(options);
+                } catch (e) {
+                    console.error('Error parsing quiz options:', e);
+                    return;
+                }
+            }
+            
+            if (!Array.isArray(options)) {
+                console.error('Quiz options are not in the correct format');
+                return;
+            }
+            
+            options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'w-full text-left p-2 border rounded hover:bg-gray-100';
+                button.textContent = option;
+                button.onclick = () => selectQuizOption(option);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        let selectedAnswer = null;
+        function selectQuizOption(option) {
+            selectedAnswer = option;
+            const buttons = document.getElementById('quizOptions').getElementsByTagName('button');
+            Array.from(buttons).forEach(button => {
+                button.classList.remove('bg-blue-100');
+                if (button.textContent === option) {
+                    button.classList.add('bg-blue-100');
+                }
+            });
+        }
+
+        async function submitQuiz() {
+            if (!selectedAnswer || !currentQuiz) return;
+
+            try {
+                const response = await fetch('/quiz/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUser.id,
+                        quiz_id: currentQuiz.id,
+                        selected_answer: selectedAnswer
+                    })
+                });
+
+                const data = await response.json();
+                alert(data.correct ? 'Correct answer! +10 points' : 'Incorrect answer. Try again!');
+                loadQuiz();
+                loadUserData();
+            } catch (error) {
+                console.error('Quiz submission error:', error);
+                alert('An error occurred while submitting your answer.');
+            }
+        }
+
+        // User data functions
+        async function loadUserData() {
+            try {
+                const pointsResponse = await fetch(`/points/total/${currentUser.id}`);
+                const pointsData = await pointsResponse.json();
+                document.getElementById('totalPoints').textContent = pointsData.total_points;
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        async function loadGoals() {
+            try {
+                const response = await fetch(`/goals?user_id=${currentUser.id}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.error || 'Failed to load goals');
+                }
+                displayGoals(Array.isArray(result.data) ? result.data : []);
+            } catch (error) {
+                console.error('Error loading goals:', error);
+                displayGoals([]);
+            }
+        }
+
+        function displayGoals(goals) {
+            const goalsContainer = document.getElementById('goalsList');
+            goalsContainer.innerHTML = '';
+            
+            if (!Array.isArray(goals) || goals.length === 0) {
+                goalsContainer.innerHTML = `
+                    <div class="col-span-full text-center py-8 text-gray-500">
+                        No goals available. Click "Add New Goal" to create one!
+                    </div>
+                `;
+                return;
+            }
+            
+            goals
+                .filter(goal => currentGoalFilter === 'all' || goal.category === currentGoalFilter)
+                .forEach(goal => {
+                    // Ensure all required properties exist with default values
+                    const {
+                        title = 'Unnamed Goal',
+                        description = '',
+                        category = 'other',
+                        status = 'not_started',
+                        target_date = null,
+                        target_value = null,
+                        current_value = 0
+                    } = goal;
+
+                    const goalCard = document.createElement('div');
+                    goalCard.className = 'bg-gray-50 p-4 rounded-lg border';
+                    goalCard.innerHTML = `
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold">${title}</h3>
+                            <span class="text-sm px-2 py-1 rounded ${getStatusClass(status)}">${status}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">${description || ''}</p>
+                        <div class="text-sm">
+                            <p class="text-gray-600">Category: ${category}</p>
+                            ${target_date ? `<p class="text-gray-600">Target: ${new Date(target_date).toLocaleDateString()}</p>` : ''}
+                            ${target_value ? `<p class="text-gray-600">Progress: ${current_value}/${target_value}</p>` : ''}
+                        </div>
+                        <div class="mt-4 flex justify-end space-x-2">
+                            <button onclick="updateGoalStatus('${goal.id}', '${getNextStatus(status)}')" 
+                                    class="text-sm px-3 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200">
+                                ${getNextStatusLabel(status)}
+                            </button>
+                            <button onclick="deleteGoal('${goal.id}')" 
+                                    class="text-sm px-3 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200">
+                                Delete
+                            </button>
+                        </div>
+                    `;
+                    goalsContainer.appendChild(goalCard);
+                });
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'not_started': 'bg-gray-100 text-gray-700',
+                'in_progress': 'bg-blue-100 text-blue-700',
+                'completed': 'bg-green-100 text-green-700',
+                'abandoned': 'bg-red-100 text-red-700'
+            };
+            return classes[status] || classes.not_started;
+        }
+
+        function getNextStatus(currentStatus) {
+            const statusFlow = {
+                'not_started': 'in_progress',
+                'in_progress': 'completed',
+                'completed': 'not_started',
+                'abandoned': 'not_started'
+            };
+            return statusFlow[currentStatus] || 'not_started';
+        }
+
+        function getNextStatusLabel(currentStatus) {
+            const statusLabels = {
+                'not_started': 'Start',
+                'in_progress': 'Complete',
+                'completed': 'Restart',
+                'abandoned': 'Restart'
+            };
+            return statusLabels[currentStatus] || 'Start';
+        }
+
+        function showGoalForm() {
+            document.getElementById('goalFormModal').classList.remove('hidden');
+        }
+
+        function hideGoalForm() {
+            document.getElementById('goalFormModal').classList.add('hidden');
+        }
+
+        async function submitGoal(event) {
+            event.preventDefault();
+            
+            const goalData = {
+                user_id: currentUser.id,
+                title: document.getElementById('goalTitle').value,
+                description: document.getElementById('goalDescription').value,
+                category: document.getElementById('goalCategory').value,
+                target_date: document.getElementById('goalTargetDate').value || null,
+                target_value: document.getElementById('goalTargetValue').value || null,
+                status: 'not_started'
+            };
+            
+            try {
+                const response = await fetch('/goals', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(goalData)
+                });
+                
+                if (response.ok) {
+                    hideGoalForm();
+                    loadGoals();
+                    // Reset form
+                    event.target.reset();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Failed to create goal');
+                }
+            } catch (error) {
+                console.error('Error creating goal:', error);
+                alert('An error occurred while creating the goal');
+            }
+        }
+
+        async function updateGoalStatus(goalId, newStatus) {
+            try {
+                const response = await fetch(`/goals/${goalId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUser.id,
+                        status: newStatus
+                    })
+                });
+                
+                if (response.ok) {
+                    loadGoals();
+                    if (newStatus === 'completed') {
+                        loadUserData();  // Refresh points
+                    }
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Failed to update goal');
+                }
+            } catch (error) {
+                console.error('Error updating goal:', error);
+                alert('An error occurred while updating the goal');
+            }
+        }
+
+        async function deleteGoal(goalId) {
+            if (!confirm('Are you sure you want to delete this goal?')) return;
+            
+            try {
+                const response = await fetch(`/goals/${goalId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadGoals();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Failed to delete goal');
+                }
+            } catch (error) {
+                console.error('Error deleting goal:', error);
+                alert('An error occurred while deleting the goal');
+            }
+        }
+
+        function filterGoals(category) {
+            currentGoalFilter = category;
+            // Update active filter button
+            document.querySelectorAll('.goal-filter').forEach(btn => {
+                btn.classList.toggle('bg-blue-100', btn.innerText.toLowerCase() === category);
+            });
+            loadGoals();
+        }
+
+        async function loadHabits() {
+            try {
+                const response = await fetch(`/habits?user_id=${currentUser.id}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                habits = data.data;
+                displayHabits();
+            } catch (error) {
+                console.error('Error loading habits:', error);
+                showError('Failed to load habits');
+            }
+        }
+
+        function displayHabits() {
+            const habitsList = document.getElementById('habitsList');
+            habitsList.innerHTML = '';
+            
+            const filteredHabits = currentHabitFilter === 'all'
+                ? habits
+                : habits.filter(habit => habit.category === currentHabitFilter);
+            
+            if (filteredHabits.length === 0) {
+                habitsList.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        No habits found. Create your first habit to get started!
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredHabits.forEach(habit => {
+                const streakClass = habit.current_streak >= 7 ? 'text-orange-500' : 'text-gray-600';
+                const completedToday = habit.completed_today;
+                
+                const habitCard = document.createElement('div');
+                habitCard.className = 'bg-white border rounded-lg p-4 shadow hover:shadow-md transition-shadow';
+                habitCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-semibold">${habit.title}</h3>
+                            <p class="text-gray-600 text-sm">${habit.description || ''}</p>
+                            <div class="flex items-center mt-2 space-x-4">
+                                <span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">${habit.category}</span>
+                                <span class="text-sm bg-purple-100 text-purple-800 px-2 py-1 rounded">${habit.frequency}</span>
+                                <span class="${streakClass} text-sm flex items-center">
+                                    <span class="mr-1">🔥</span>${habit.current_streak} day streak
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            ${!completedToday ? `
+                                <button onclick="completeHabit('${habit.id}')"
+                                    class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">
+                                    Complete
+                                </button>
+                            ` : `
+                                <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded">
+                                    ✓ Done
+                                </span>
+                            `}
+                            <button onclick="deleteHabit('${habit.id}')"
+                                class="text-red-500 hover:text-red-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="text-sm text-gray-600 mb-2">Last 7 days:</div>
+                        <div class="flex space-x-1">
+                            ${habit.history.reverse().map(day => `
+                                <div class="flex flex-col items-center">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center ${
+                                        day.completed ? 'bg-green-500 text-white' : 'bg-gray-100'
+                                    }">
+                                        ${day.completed ? '✓' : ''}
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        ${new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                habitsList.appendChild(habitCard);
+            });
+        }
+
+        function filterHabits(category) {
+            currentHabitFilter = category;
+            document.querySelectorAll('.habit-filter').forEach(btn => {
+                btn.classList.toggle('bg-blue-100', btn.innerText.toLowerCase() === category);
+            });
+            displayHabits();
+        }
+
+        function showHabitForm() {
+            document.getElementById('habitFormModal').classList.remove('hidden');
+        }
+
+        function hideHabitForm() {
+            document.getElementById('habitFormModal').classList.add('hidden');
+            document.getElementById('habitTitle').value = '';
+            document.getElementById('habitDescription').value = '';
+            document.getElementById('habitCategory').value = 'health';
+            document.getElementById('habitFrequency').value = 'daily';
+            document.getElementById('habitTargetValue').value = '1';
+        }
+
+        async function submitHabit(event) {
+            event.preventDefault();
+            
+            const habitData = {
+                user_id: currentUser.id,
+                title: document.getElementById('habitTitle').value,
+                description: document.getElementById('habitDescription').value,
+                category: document.getElementById('habitCategory').value,
+                frequency: document.getElementById('habitFrequency').value,
+                target_value: parseInt(document.getElementById('habitTargetValue').value)
+            };
+            
+            try {
+                const response = await fetch('/habits', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(habitData)
+                });
+                
+                if (response.ok) {
+                    hideHabitForm();
+                    loadHabits();
+                    showSuccess('Habit created successfully!');
+                } else {
+                    const data = await response.json();
+                    showError(data.error || 'Failed to create habit');
+                }
+            } catch (error) {
+                console.error('Error creating habit:', error);
+                showError('An error occurred while creating the habit');
+            }
+        }
+
+        async function completeHabit(habitId) {
+            try {
+                const response = await fetch(`/habits/${habitId}/complete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUser.id
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    loadHabits();
+                    loadUserData();  // Refresh points
+                    showSuccess(`Habit completed! +${data.data.points_earned} points`);
+                    
+                    if (data.data.streak > 0 && data.data.streak % 7 === 0) {
+                        showSuccess(`🔥 ${data.data.streak}-day streak! +50 bonus points!`);
+                    }
+                } else {
+                    const data = await response.json();
+                    showError(data.error || 'Failed to complete habit');
+                }
+            } catch (error) {
+                console.error('Error completing habit:', error);
+                showError('An error occurred while completing the habit');
+            }
+        }
+
+        async function deleteHabit(habitId) {
+            if (!confirm('Are you sure you want to delete this habit? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/habits/${habitId}?user_id=${currentUser.id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadHabits();
+                    showSuccess('Habit deleted successfully');
+                } else {
+                    const data = await response.json();
+                    showError(data.error || 'Failed to delete habit');
+                }
+            } catch (error) {
+                console.error('Error deleting habit:', error);
+                showError('An error occurred while deleting the habit');
+            }
+        }
+
+        async function loadFinancialData() {
+            const period = document.getElementById('financePeriod').value;
+            await Promise.all([
+                loadTransactions(period),
+                loadFinancialSummary(period)
+            ]);
+        }
+
+        async function loadTransactions(period = 'month') {
+            try {
+                const response = await fetch(`/finance/transactions?user_id=${currentUser.id}&period=${period}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.error || 'Failed to load transactions');
+                }
+                displayTransactions(Array.isArray(result.data) ? result.data : []);
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+                displayTransactions([]);
+            }
+        }
+
+        function displayTransactions(transactions) {
+            const tbody = document.getElementById('transactionsList');
+            tbody.innerHTML = '';
+            
+            if (!Array.isArray(transactions) || transactions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                            No transactions available for this period.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            transactions.forEach(transaction => {
+                // Ensure all required properties exist with default values
+                const {
+                    date = new Date().toISOString(),
+                    type = 'expense',
+                    category = 'Other',
+                    description = '',
+                    amount = 0
+                } = transaction;
+
+                const row = document.createElement('tr');
+                const amountClass = getAmountClass(type);
+                const amountPrefix = getAmountPrefix(type);
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${new Date(date).toLocaleDateString()}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${capitalizeFirstLetter(type)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${category}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${description || '-'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm ${amountClass} text-right">
+                        ${amountPrefix}$${Number(amount).toFixed(2)}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function getAmountClass(type) {
+            const classes = {
+                'expense': 'text-red-600',
+                'income': 'text-green-600',
+                'saving': 'text-blue-600',
+                'investment': 'text-purple-600'
+            };
+            return classes[type] || 'text-gray-500';
+        }
+
+        function getAmountPrefix(type) {
+            return type === 'expense' ? '-' : '';
+        }
+
+        async function loadFinancialSummary(period = 'month') {
+            try {
+                const response = await fetch(`/finance/summary?user_id=${currentUser.id}&period=${period}`);
+                const result = await response.json();
+                
+                // Always display the data, even if there's an error
+                // The backend will return default values in case of error
+                displayFinancialSummary(result.data || {
+                    income: 0,
+                    expenses: 0,
+                    savings: 0,
+                    investments: 0,
+                    savings_rate: 0
+                });
+            } catch (error) {
+                console.error('Error loading financial summary:', error);
+                // Set default values when there's an error
+                displayFinancialSummary({
+                    income: 0,
+                    expenses: 0,
+                    savings: 0,
+                    investments: 0,
+                    savings_rate: 0
+                });
+            }
+        }
+
+        function displayFinancialSummary(summary) {
+            // Ensure summary object exists and has all required properties with default values
+            const data = {
+                income: parseFloat(summary?.income ?? 0),
+                expenses: parseFloat(summary?.expenses ?? 0),
+                savings: parseFloat(summary?.savings ?? 0),
+                investments: parseFloat(summary?.investments ?? 0),
+                savings_rate: parseFloat(summary?.savings_rate ?? 0)
+            };
+            
+            // Format the values with 2 decimal places
+            document.getElementById('totalIncome').textContent = `$${data.income.toFixed(2)}`;
+            document.getElementById('totalExpenses').textContent = `$${data.expenses.toFixed(2)}`;
+            document.getElementById('totalSavings').textContent = `$${data.savings.toFixed(2)}`;
+            document.getElementById('totalInvestments').textContent = `$${data.investments.toFixed(2)}`;
+            document.getElementById('savingsRate').textContent = `${data.savings_rate.toFixed(1)}% of income`;
+        }
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('/finance/categories');
+                const data = await response.json();
+                categories = data.data;
+                updateCategoryOptions();
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+
+        function updateCategoryOptions() {
+            const type = document.getElementById('transactionType').value;
+            const categorySelect = document.getElementById('transactionCategory');
+            categorySelect.innerHTML = '';
+            
+            categories[type]?.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        function showTransactionForm() {
+            document.getElementById('transactionFormModal').classList.remove('hidden');
+            document.getElementById('transactionDate').valueAsDate = new Date();
+            if (Object.keys(categories).length === 0) {
+                loadCategories();
+            }
+        }
+
+        function hideTransactionForm() {
+            document.getElementById('transactionFormModal').classList.add('hidden');
+        }
+
+        async function submitTransaction(event) {
+            event.preventDefault();
+            
+            const transactionData = {
+                user_id: currentUser.id,
+                type: document.getElementById('transactionType').value,
+                category: document.getElementById('transactionCategory').value,
+                amount: parseFloat(document.getElementById('transactionAmount').value),
+                description: document.getElementById('transactionDescription').value,
+                date: document.getElementById('transactionDate').value
+            };
+            
+            try {
+                const response = await fetch('/finance/transactions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(transactionData)
+                });
+                
+                if (response.ok) {
+                    hideTransactionForm();
+                    loadFinancialData();
+                    // Reset form
+                    event.target.reset();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Failed to add transaction');
+                }
+            } catch (error) {
+                console.error('Error adding transaction:', error);
+                alert('An error occurred while adding the transaction');
+            }
+        }
+
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        async function loadPrizeDraws() {
+            try {
+                const [drawsResponse, pointsResponse] = await Promise.all([
+                    fetch('/prize-draw/draws'),
+                    fetch(`/points/total/${currentUser.id}`)
+                ]);
+                
+                if (!drawsResponse.ok) {
+                    throw new Error(`HTTP error! status: ${drawsResponse.status}`);
+                }
+                if (!pointsResponse.ok) {
+                    throw new Error(`HTTP error! status: ${pointsResponse.status}`);
+                }
+
+                const drawsResult = await drawsResponse.json();
+                const pointsResult = await pointsResponse.json();
+
+                if (!drawsResult.success) {
+                    throw new Error(drawsResult.error || 'Failed to load prize draws');
+                }
+                
+                document.getElementById('prizeDrawPoints').textContent = pointsResult.total_points || 0;
+                displayPrizeDraws(Array.isArray(drawsResult.data) ? drawsResult.data : []);
+            } catch (error) {
+                console.error('Error loading prize draws:', error);
+                document.getElementById('prizeDrawPoints').textContent = '0';
+                displayPrizeDraws([]);
+            }
+        }
+
+        function displayPrizeDraws(draws) {
+            const container = document.getElementById('activeDraws');
+            container.innerHTML = '';
+            
+            if (!Array.isArray(draws) || draws.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-8 text-gray-500">
+                        No active prize draws at the moment.
+                    </div>
+                `;
+                return;
+            }
+            
+            draws.forEach(draw => {
+                // Ensure all required properties exist with default values
+                const {
+                    title = 'Unnamed Draw',
+                    description = '',
+                    prize = 'Mystery Prize',
+                    points_required = 0,
+                    end_date = new Date().toISOString()
+                } = draw;
+
+                const timeLeft = getTimeLeft(new Date(end_date));
+                
+                const card = document.createElement('div');
+                card.className = 'bg-gradient-to-br from-purple-50 to-blue-50 p-6 rounded-lg border border-purple-100';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="font-bold text-lg text-purple-800">${title}</h3>
+                        <span class="text-sm px-2 py-1 rounded bg-purple-100 text-purple-700">
+                            ${points_required} points/ticket
+                        </span>
+                    </div>
+                    <p class="text-gray-600 mb-4">${description || ''}</p>
+                    <div class="mb-4">
+                        <p class="text-sm font-semibold text-purple-700">Prize:</p>
+                        <p class="text-lg font-bold text-purple-900">${prize}</p>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="text-sm text-purple-600">
+                            Ends in: ${timeLeft}
+                        </div>
+                        <button onclick="showDrawEntryModal('${draw.id}')" 
+                                class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+                            Enter Draw
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function getTimeLeft(endDate) {
+            const now = new Date();
+            const diff = endDate - now;
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (days > 0) {
+                return `${days}d ${hours}h`;
+            } else if (hours > 0) {
+                return `${hours}h ${minutes}m`;
+            } else {
+                return `${minutes}m`;
+            }
+        }
+
+        let selectedDraw = null;
+
+        function showDrawEntryModal(drawId) {
+            selectedDraw = currentDraws.find(d => d.id === drawId);
+            if (!selectedDraw) return;
+            
+            document.getElementById('selectedDrawId').value = drawId;
+            document.getElementById('ticketCount').value = '1';
+            updatePointsRequired();
+            
+            const detailsContainer = document.getElementById('drawDetails');
+            detailsContainer.innerHTML = `
+                <div class="mb-4">
+                    <h4 class="font-bold text-gray-700">${selectedDraw.title}</h4>
+                    <p class="text-sm text-gray-600">${selectedDraw.prize}</p>
+                </div>
+            `;
+            
+            document.getElementById('drawEntryModal').classList.remove('hidden');
+        }
+
+        function hideDrawEntryModal() {
+            document.getElementById('drawEntryModal').classList.add('hidden');
+            selectedDraw = null;
+        }
+
+        function updatePointsRequired() {
+            if (!selectedDraw) return;
+            
+            const tickets = parseInt(document.getElementById('ticketCount').value) || 1;
+            const points = tickets * selectedDraw.points_required;
+            document.getElementById('pointsRequired').textContent = points;
+        }
+
+        async function submitDrawEntry(event) {
+            event.preventDefault();
+            
+            const drawId = document.getElementById('selectedDrawId').value;
+            const tickets = parseInt(document.getElementById('ticketCount').value);
+            
+            try {
+                const response = await fetch(`/prize-draw/draws/${drawId}/enter`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUser.id,
+                        tickets: tickets
+                    })
+                });
+                
+                if (response.ok) {
+                    hideDrawEntryModal();
+                    loadPrizeDraws();
+                    loadUserData();
+                    alert('Successfully entered the prize draw!');
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Failed to enter draw');
+                }
+            } catch (error) {
+                console.error('Error entering draw:', error);
+                alert('An error occurred while entering the draw');
+            }
+        }
+
+        // Add event listener for ticket count changes
+        document.getElementById('ticketCount').addEventListener('input', updatePointsRequired);
+
+        async function loadAchievements() {
+            try {
+                const response = await fetch(`/rewards/achievements?user_id=${currentUser.id}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.error || 'Failed to load achievements');
+                }
+                achievements = Array.isArray(result.data) ? result.data : [];
+                displayAchievements();
+                updateAchievementStats();
+            } catch (error) {
+                console.error('Error loading achievements:', error);
+                achievements = [];
+                displayAchievements();
+                updateAchievementStats();
+            }
+        }
+
+        function displayAchievements() {
+            const container = document.getElementById('achievementsGrid');
+            container.innerHTML = '';
+            
+            if (!Array.isArray(achievements) || achievements.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-8 text-gray-500">
+                        No achievements available at the moment.
+                    </div>
+                `;
+                return;
+            }
+            
+            achievements
+                .filter(achievement => currentAchievementFilter === 'all' || achievement.category === currentAchievementFilter)
+                .forEach(achievement => {
+                    // Ensure all required properties exist with default values
+                    const {
+                        progress = 0,
+                        requirement_value = 1,
+                        completed = false,
+                        title = 'Unknown Achievement',
+                        description = '',
+                        badge_icon = '🏆',
+                        points_reward = 0
+                    } = achievement;
+
+                    const progressPercent = Math.min(100, (progress / requirement_value) * 100);
+                    const card = document.createElement('div');
+                    card.className = `bg-gradient-to-br ${completed ? 'from-yellow-50 to-orange-50 border-yellow-200' : 'from-gray-50 to-gray-100 border-gray-200'} p-6 rounded-lg border`;
+                    card.innerHTML = `
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <span class="text-2xl mr-3">${badge_icon}</span>
+                                <div>
+                                    <h3 class="font-bold ${completed ? 'text-yellow-800' : 'text-gray-800'}">${title}</h3>
+                                    <p class="text-sm text-gray-600">${description}</p>
+                                </div>
+                            </div>
+                            ${completed ? '<span class="text-yellow-600">✓</span>' : ''}
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Progress: ${progress}/${requirement_value}</span>
+                                <span class="text-blue-600">+${points_reward} pts</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="h-2 rounded-full ${completed ? 'bg-yellow-500' : 'bg-blue-500'}" 
+                                     style="width: ${progressPercent}%"></div>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+        }
+
+        function updateAchievementStats() {
+            const completed = Array.isArray(achievements) ? achievements.filter(a => a?.completed).length : 0;
+            const total = Array.isArray(achievements) ? achievements.length : 0;
+            document.getElementById('achievementsCompleted').textContent = completed;
+            document.getElementById('achievementsTotal').textContent = total;
+        }
+
+        function filterAchievements(category) {
+            currentAchievementFilter = category;
+            // Update active filter button
+            document.querySelectorAll('.achievement-filter').forEach(btn => {
+                btn.classList.toggle('bg-yellow-100', btn.innerText.toLowerCase() === category);
+            });
+            displayAchievements();
+        }
+
+        async function loadRewards() {
+            try {
+                const [rewardsResponse, pointsResponse] = await Promise.all([
+                    fetch(`/rewards/rewards?user_id=${currentUser.id}`),
+                    fetch(`/points/total/${currentUser.id}`)
+                ]);
+                
+                if (!rewardsResponse.ok) {
+                    throw new Error(`HTTP error! status: ${rewardsResponse.status}`);
+                }
+                if (!pointsResponse.ok) {
+                    throw new Error(`HTTP error! status: ${pointsResponse.status}`);
+                }
+
+                const rewardsResult = await rewardsResponse.json();
+                const pointsResult = await pointsResponse.json();
+
+                if (!rewardsResult.success) {
+                    throw new Error(rewardsResult.error || 'Failed to load rewards');
+                }
+                
+                rewards = Array.isArray(rewardsResult.data) ? rewardsResult.data : [];
+                document.getElementById('rewardsPoints').textContent = pointsResult.total_points || 0;
+                displayRewards();
+            } catch (error) {
+                console.error('Error loading rewards:', error);
+                rewards = [];
+                document.getElementById('rewardsPoints').textContent = '0';
+                displayRewards();
+            }
+        }
+
+        function displayRewards() {
+            const container = document.getElementById('rewardsGrid');
+            container.innerHTML = '';
+            
+            if (!Array.isArray(rewards) || rewards.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-8 text-gray-500">
+                        No rewards available at the moment.
+                    </div>
+                `;
+                return;
+            }
+            
+            rewards.forEach(reward => {
+                // Ensure all required properties exist with default values
+                const {
+                    title = 'Unnamed Reward',
+                    description = '',
+                    points_cost = 0,
+                    availability = 'unlimited',
+                    stock = 0
+                } = reward;
+
+                const card = document.createElement('div');
+                card.className = 'bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-lg border border-indigo-100';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="font-bold text-lg text-indigo-800">${title}</h3>
+                        <span class="text-sm px-2 py-1 rounded bg-indigo-100 text-indigo-700">
+                            ${points_cost} points
+                        </span>
+                    </div>
+                    <p class="text-gray-600 mb-4">${description}</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-indigo-600">
+                            ${availability === 'limited' ? `${stock} remaining` : 
+                              availability === 'one_time' ? 'One-time unlock' : 'Always available'}
+                        </span>
+                        <button onclick="redeemReward('${reward.id}')" 
+                                class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">
+                            Redeem
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function redeemReward(rewardId) {
+            try {
+                const response = await fetch(`/rewards/rewards/${rewardId}/redeem`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUser.id
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('Reward redeemed successfully!');
+                    loadRewards();
+                    loadUserData();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Failed to redeem reward');
+                }
+            } catch (error) {
+                console.error('Error redeeming reward:', error);
+                alert('An error occurred while redeeming the reward');
+            }
+        }
+
+        // Add event listener for ticket count changes
+        document.getElementById('ticketCount').addEventListener('input', updatePointsRequired);
+
+        function showCustomDurationModal() {
+            document.getElementById('customDurationModal').classList.remove('hidden');
+        }
+
+        function hideCustomDurationModal() {
+            document.getElementById('customDurationModal').classList.add('hidden');
+        }
+
+        function setCustomDuration() {
+            const minutes = parseInt(document.getElementById('customMinutes').value);
+            if (minutes < 1 || minutes > 180) {
+                alert('Please enter a duration between 1 and 180 minutes');
+                return;
+            }
+            
+            document.getElementById('focusDuration').innerHTML = `
+                <option value="${minutes}">${minutes} minutes</option>
+                <option value="25">25 minutes</option>
+                <option value="45">45 minutes</option>
+                <option value="60">60 minutes</option>
+                <option value="custom">Custom</option>
+            `;
+            
+            hideCustomDurationModal();
+        }
+
+        async function startFocusSession() {
+            if (currentFocusSession) {
+                alert('A focus session is already in progress');
+                return;
+            }
+            
+            const durationSelect = document.getElementById('focusDuration');
+            if (durationSelect.value === 'custom') {
+                showCustomDurationModal();
+                return;
+            }
+            
+            const duration = parseInt(durationSelect.value);
+            timeLeft = duration * 60;
+            
+            try {
+                const response = await fetch('/focus/sessions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUser.id,
+                        duration: duration
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    currentFocusSession = data.data;
+                    
+                    // Show timer display
+                    document.getElementById('timerDisplay').classList.remove('hidden');
+                    document.getElementById('startFocusBtn').disabled = true;
+                    document.getElementById('startFocusBtn').classList.add('opacity-50');
+                    
+                    // Start timer
+                    updateTimerDisplay();
+                    timerInterval = setInterval(updateTimer, 1000);
+                    
+                    // Update UI
+                    document.getElementById('pauseBtn').textContent = 'Pause';
+                    isPaused = false;
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Failed to start focus session');
+                }
+            } catch (error) {
+                console.error('Error starting focus session:', error);
+                alert('An error occurred while starting the focus session');
+            }
+        }
+
+        function updateTimer() {
+            if (!isPaused && timeLeft > 0) {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft === 0) {
+                    completeFocusSession();
+                }
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timeRemaining').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function pauseTimer() {
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').textContent = isPaused ? 'Resume' : 'Pause';
+        }
+
+        async function stopTimer() {
+            if (!confirm('Are you sure you want to stop the focus session? This cannot be undone.')) {
+                return;
+            }
+            
+            clearInterval(timerInterval);
+            
+            try {
+                const response = await fetch(`/focus/sessions/${currentFocusSession.id}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    resetTimer();
+                    loadFocusHistory();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Failed to stop focus session');
+                }
+            } catch (error) {
+                console.error('Error stopping focus session:', error);
+                alert('An error occurred while stopping the focus session');
+            }
+        }
+
+        async function completeFocusSession() {
+            clearInterval(timerInterval);
+            
+            try {
+                const response = await fetch(`/focus/sessions/${currentFocusSession.id}/complete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUser.id
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(`Focus session completed! You earned ${data.data.points_earned} points!`);
+                    resetTimer();
+                    loadFocusHistory();
+                    loadUserData();  // Refresh points
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Failed to complete focus session');
+                }
+            } catch (error) {
+                console.error('Error completing focus session:', error);
+                alert('An error occurred while completing the focus session');
+            }
+        }
+
+        function resetTimer() {
+            currentFocusSession = null;
+            timeLeft = 0;
+            document.getElementById('timerDisplay').classList.add('hidden');
+            document.getElementById('startFocusBtn').disabled = false;
+            document.getElementById('startFocusBtn').classList.remove('opacity-50');
+            document.getElementById('timeRemaining').textContent = '25:00';
+        }
+
+        async function loadFocusHistory() {
+            try {
+                const response = await fetch(`/focus/sessions?user_id=${currentUser.id}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                displayFocusHistory(data.data || []);
+            } catch (error) {
+                console.error('Error loading focus history:', error);
+                displayFocusHistory([]);
+            }
+        }
+
+        function displayFocusHistory(sessions) {
+            const tbody = document.getElementById('focusHistory');
+            tbody.innerHTML = '';
+            
+            if (!Array.isArray(sessions) || sessions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                            No focus sessions found. Start your first session to begin tracking!
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            sessions.forEach(session => {
+                const row = document.createElement('tr');
+                const startTime = new Date(session.start_time);
+                const endTime = session.end_time ? new Date(session.end_time) : null;
+                const duration = session.duration;
+                const points = session.status === 'completed' ? (duration / 5) * 2 : 0;
+                
+                const statusClass = {
+                    'completed': 'text-green-600',
+                    'in_progress': 'text-blue-600',
+                    'cancelled': 'text-red-600'
+                }[session.status] || 'text-gray-600';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${startTime.toLocaleDateString()} ${startTime.toLocaleTimeString()}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${duration} minutes
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm ${statusClass}">
+                        ${session.status}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${points}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Add focus duration change handler
+        document.getElementById('focusDuration').addEventListener('change', function(e) {
+            if (e.target.value === 'custom') {
+                showCustomDurationModal();
+            }
+        });
+
+        // Add to initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            if (currentUser) {
+                loadFocusHistory();
+            }
+        });
+
+        let selectedActivities = new Set();
+
+        function showMoodForm() {
+            document.getElementById('moodFormModal').classList.remove('hidden');
+            resetMoodForm();
+        }
+
+        function hideMoodForm() {
+            document.getElementById('moodFormModal').classList.add('hidden');
+        }
+
+        function resetMoodForm() {
+            document.getElementById('moodRating').value = '';
+            document.getElementById('moodType').value = 'happy';
+            document.getElementById('energyLevel').value = '';
+            document.getElementById('sleepHours').value = '';
+            document.getElementById('moodNotes').value = '';
+            document.getElementById('selectedActivities').value = '';
+            selectedActivities.clear();
+            
+            // Reset mood buttons
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-100');
+            });
+            
+            // Reset energy buttons
+            document.querySelectorAll('.energy-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-100');
+            });
+            
+            // Reset activity tags
+            document.querySelectorAll('.activity-tag').forEach(tag => {
+                tag.classList.remove('bg-blue-100');
+            });
+        }
+
+        function selectMood(rating) {
+            document.getElementById('moodRating').value = rating;
+            document.querySelectorAll('.mood-btn').forEach((btn, index) => {
+                btn.classList.toggle('bg-blue-100', index + 1 === rating);
+            });
+        }
+
+        function selectEnergy(level) {
+            document.getElementById('energyLevel').value = level;
+            document.querySelectorAll('.energy-btn').forEach((btn, index) => {
+                btn.classList.toggle('bg-blue-100', index + 1 === level);
+            });
+        }
+
+        function toggleActivity(activity) {
+            const button = document.querySelector(`[onclick="toggleActivity('${activity}')"]`);
+            if (selectedActivities.has(activity)) {
+                selectedActivities.delete(activity);
+                button.classList.remove('bg-blue-100');
+            } else {
+                selectedActivities.add(activity);
+                button.classList.add('bg-blue-100');
+            }
+            document.getElementById('selectedActivities').value = JSON.stringify(Array.from(selectedActivities));
+        }
+
+        async function submitMoodEntry(event) {
+            event.preventDefault();
+            
+            const moodData = {
+                user_id: currentUser.id,
+                mood_rating: parseInt(document.getElementById('moodRating').value),
+                mood_type: document.getElementById('moodType').value,
+                energy_level: document.getElementById('energyLevel').value ? parseInt(document.getElementById('energyLevel').value) : null,
+                sleep_hours: document.getElementById('sleepHours').value ? parseFloat(document.getElementById('sleepHours').value) : null,
+                activities: Array.from(selectedActivities),
+                notes: document.getElementById('moodNotes').value
+            };
+            
+            try {
+                const response = await fetch('/mood/entries', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(moodData)
+                });
+                
+                if (response.ok) {
+                    hideMoodForm();
+                    loadMoodData();
+                    loadUserData();  // Refresh points
+                    showSuccess('Mood entry saved successfully! +5 points');
+                } else {
+                    const data = await response.json();
+                    showError(data.error || 'Failed to save mood entry');
+                }
+            } catch (error) {
+                console.error('Error saving mood entry:', error);
+                showError('An error occurred while saving your mood entry');
+            }
+        }
+
+        async function loadMoodData() {
+            const period = document.getElementById('moodPeriod').value;
+            await Promise.all([
+                loadMoodEntries(period),
+                loadMoodAnalytics(period)
+            ]);
+        }
+
+        async function loadMoodEntries(period = 'week') {
+            try {
+                const response = await fetch(`/mood/entries?user_id=${currentUser.id}&period=${period}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                displayMoodEntries(data.data || []);
+            } catch (error) {
+                console.error('Error loading mood entries:', error);
+                displayMoodEntries([]);
+            }
+        }
+
+        function displayMoodEntries(entries) {
+            const tbody = document.getElementById('moodHistory');
+            tbody.innerHTML = '';
+            
+            if (!Array.isArray(entries) || entries.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                            No mood entries found. Start tracking your mood to see your history!
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            entries.forEach(entry => {
+                const row = document.createElement('tr');
+                const date = new Date(entry.created_at);
+                const moodEmoji = ['😢', '😕', '😐', '🙂', '😄'][entry.mood_rating - 1];
+                const energyStars = entry.energy_level ? '⚡'.repeat(entry.energy_level) : '-';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${date.toLocaleDateString()} ${date.toLocaleTimeString()}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span class="text-lg">${moodEmoji}</span>
+                        <span class="text-gray-500 ml-2">${entry.mood_type}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${energyStars}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${entry.sleep_hours ? `${entry.sleep_hours}h` : '-'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${entry.activities.join(', ') || '-'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${entry.notes || '-'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <button onclick="deleteMoodEntry('${entry.id}')"
+                            class="text-red-500 hover:text-red-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        async function loadMoodAnalytics(period = 'week') {
+            try {
+                const response = await fetch(`/mood/analytics?user_id=${currentUser.id}&period=${period}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                displayMoodAnalytics(data.data);
+            } catch (error) {
+                console.error('Error loading mood analytics:', error);
+                displayMoodAnalytics({
+                    average_mood: 0,
+                    average_energy: 0,
+                    average_sleep: 0,
+                    mood_distribution: {},
+                    common_activities: [],
+                    best_mood_activities: []
+                });
+            }
+        }
+
+        function displayMoodAnalytics(analytics) {
+            // Update average scores
+            document.getElementById('averageMood').textContent = analytics.average_mood;
+            document.getElementById('averageEnergy').textContent = analytics.average_energy;
+            document.getElementById('averageSleep').textContent = analytics.average_sleep;
+            
+            // Update mood distribution
+            const distributionContainer = document.getElementById('moodDistribution');
+            distributionContainer.innerHTML = '';
+            
+            Object.entries(analytics.mood_distribution).forEach(([mood, percentage]) => {
+                const bar = document.createElement('div');
+                bar.className = 'flex items-center';
+                bar.innerHTML = `
+                    <div class="w-24 text-sm text-gray-600">${mood}</div>
+                    <div class="flex-1 ml-2">
+                        <div class="bg-gray-200 rounded-full h-2">
+                            <div class="h-2 rounded-full bg-green-500" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                    <div class="w-12 text-sm text-gray-600 text-right">${percentage}%</div>
+                `;
+                distributionContainer.appendChild(bar);
+            });
+            
+            // Update common activities
+            const commonContainer = document.getElementById('commonActivities');
+            commonContainer.innerHTML = '';
+            
+            analytics.common_activities.forEach(({activity, count}) => {
+                const item = document.createElement('div');
+                item.className = 'flex justify-between text-sm';
+                item.innerHTML = `
+                    <span class="text-gray-600">${activity}</span>
+                    <span class="font-medium">${count}x</span>
+                `;
+                commonContainer.appendChild(item);
+            });
+            
+            // Update best mood activities
+            const bestContainer = document.getElementById('bestActivities');
+            bestContainer.innerHTML = '';
+            
+            analytics.best_mood_activities.forEach(({activity, average_mood}) => {
+                const item = document.createElement('div');
+                item.className = 'flex justify-between text-sm';
+                item.innerHTML = `
+                    <span class="text-gray-600">${activity}</span>
+                    <span class="font-medium">${average_mood} / 5</span>
+                `;
+                bestContainer.appendChild(item);
+            });
+        }
+
+        async function deleteMoodEntry(entryId) {
+            if (!confirm('Are you sure you want to delete this mood entry? This cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/mood/entries/${entryId}?user_id=${currentUser.id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadMoodData();
+                    showSuccess('Mood entry deleted successfully');
+                } else {
+                    const data = await response.json();
+                    showError(data.error || 'Failed to delete mood entry');
+                }
+            } catch (error) {
+                console.error('Error deleting mood entry:', error);
+                showError('An error occurred while deleting the mood entry');
+            }
+        }
+
+        // Add to initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            if (currentUser) {
+                loadMoodData();
+            }
+        });
+
+        // Load journal entries and analytics
+        async function loadJournalData() {
+            const userId = getCurrentUserId();
+            if (!userId) return;
+            
+            try {
+                // Load entries
+                const entriesResponse = await fetch(`/journal/entries?user_id=${userId}`);
+                if (!entriesResponse.ok) throw new Error('Failed to load journal entries');
+                const entriesData = await entriesResponse.json();
+                
+                // Load analytics
+                const analyticsResponse = await fetch(`/journal/analytics?user_id=${userId}`);
+                if (!analyticsResponse.ok) throw new Error('Failed to load journal analytics');
+                const analyticsData = await analyticsResponse.json();
+                
+                displayJournalEntries(entriesData.data);
+                displayJournalAnalytics(analyticsData.data);
+            } catch (error) {
+                console.error('Error loading journal data:', error);
+                showError('Failed to load journal data');
+            }
+        }
+
+        // Display journal entries
+        function displayJournalEntries(entries) {
+            const container = document.getElementById('journalEntries');
+            container.innerHTML = '';
+            
+            if (!entries || entries.length === 0) {
+                container.innerHTML = '<p class="no-data">No journal entries yet. Start journaling to track your thoughts and progress!</p>';
+                return;
+            }
+            
+            entries.forEach(entry => {
+                const entryElement = document.createElement('div');
+                entryElement.className = 'entry-card';
+                entryElement.innerHTML = `
+                    <div class="entry-header">
+                        <span class="entry-type">${entry.prompt_type}</span>
+                        <span class="entry-date">${formatDate(entry.created_at)}</span>
+                        ${entry.mood_rating ? `<span class="entry-mood">Mood: ${entry.mood_rating}/5</span>` : ''}
+                    </div>
+                    <div class="entry-content">
+                        <p>${entry.response}</p>
+                    </div>
+                    ${entry.tags && entry.tags.length > 0 ? `
+                        <div class="entry-tags">
+                            ${entry.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="entry-actions">
+                        <button onclick="deleteJournalEntry('${entry.id}')" class="btn btn-danger btn-sm">Delete</button>
+                    </div>
+                `;
+                container.appendChild(entryElement);
+            });
+        }
+
+        // Display journal analytics
+        function displayJournalAnalytics(analytics) {
+            document.getElementById('totalEntries').textContent = analytics.total_entries;
+            document.getElementById('journalStreak').textContent = `${analytics.streak} days`;
+            
+            // Display common tags
+            const tagsContainer = document.getElementById('commonTags');
+            tagsContainer.innerHTML = analytics.common_tags
+                .map(tag => `<span class="tag">${tag.tag} (${tag.count})</span>`)
+                .join('');
+            
+            // Display mood trend chart (using a simple implementation)
+            const trendContainer = document.getElementById('moodTrendChart');
+            trendContainer.innerHTML = ''; // Clear previous chart
+            
+            if (analytics.mood_trend.length > 0) {
+                const chart = document.createElement('div');
+                chart.className = 'mood-chart';
+                analytics.mood_trend.forEach(point => {
+                    const bar = document.createElement('div');
+                    bar.className = 'mood-bar';
+                    bar.style.height = `${point.rating * 20}%`;
+                    bar.title = `${formatDate(point.date)}: ${point.rating}/5`;
+                    chart.appendChild(bar);
+                });
+                trendContainer.appendChild(chart);
+            } else {
+                trendContainer.innerHTML = '<p class="no-data">No mood data available</p>';
+            }
+        }
+
+        // Show journal form
+        async function showJournalForm(promptType) {
+            const modal = document.getElementById('journalFormModal');
+            const promptSelect = document.getElementById('journalPrompt');
+            document.getElementById('journalPromptType').value = promptType;
+            
+            try {
+                const response = await fetch(`/journal/prompts?type=${promptType}`);
+                if (!response.ok) throw new Error('Failed to load prompts');
+                const data = await response.json();
+                
+                promptSelect.innerHTML = data.data.prompts
+                    .map(prompt => `<option value="${prompt}">${prompt}</option>`)
+                    .join('');
+                
+                modal.style.display = 'block';
+            } catch (error) {
+                console.error('Error loading prompts:', error);
+                showError('Failed to load journal prompts');
+            }
+        }
+
+        // Hide journal form
+        function hideJournalForm() {
+            const modal = document.getElementById('journalFormModal');
+            modal.style.display = 'none';
+            document.getElementById('journalForm').reset();
+        }
+
+        // Submit journal entry
+        async function submitJournalEntry(event) {
+            event.preventDefault();
+            
+            const userId = getCurrentUserId();
+            if (!userId) return;
+            
+            const formData = {
+                user_id: userId,
+                prompt_type: document.getElementById('journalPromptType').value,
+                response: document.getElementById('journalResponse').value,
+                mood_rating: parseInt(document.getElementById('journalMood').value) || null,
+                tags: document.getElementById('journalTags').value
+                    .split(',')
+                    .map(tag => tag.trim())
+                    .filter(tag => tag)
+            };
+            
+            try {
+                const response = await fetch('/journal/entries', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) throw new Error('Failed to save journal entry');
+                
+                hideJournalForm();
+                loadJournalData();
+                showSuccess('Journal entry saved successfully');
+            } catch (error) {
+                console.error('Error saving journal entry:', error);
+                showError('Failed to save journal entry');
+            }
+        }
+
+        // Delete journal entry
+        async function deleteJournalEntry(entryId) {
+            if (!confirm('Are you sure you want to delete this journal entry?')) return;
+            
+            const userId = getCurrentUserId();
+            if (!userId) return;
+            
+            try {
+                const response = await fetch(`/journal/entries/${entryId}?user_id=${userId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) throw new Error('Failed to delete journal entry');
+                
+                loadJournalData();
+                showSuccess('Journal entry deleted successfully');
+            } catch (error) {
+                console.error('Error deleting journal entry:', error);
+                showError('Failed to delete journal entry');
+            }
+        }
+
+        // Load journal data when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            loadJournalData();
+        });
+    </script>
+
+    <!-- Journal Styles -->
+    <style>
+    .entries-container {
+        margin-top: 20px;
+    }
+
+    .entry-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .entry-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .entry-type {
+        font-weight: bold;
+        color: #007bff;
+    }
+
+    .entry-date {
+        color: #666;
+    }
+
+    .entry-mood {
+        background: #f8f9fa;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+
+    .entry-content {
+        margin: 10px 0;
+        white-space: pre-wrap;
+    }
+
+    .entry-tags {
+        margin-top: 10px;
+    }
+
+    .tag {
+        background: #e9ecef;
+        color: #495057;
+        padding: 2px 8px;
+        border-radius: 4px;
+        margin-right: 5px;
+        font-size: 0.9em;
+    }
+
+    .analytics-container {
+        margin-top: 30px;
+    }
+
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 15px;
+    }
+
+    .analytics-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .analytics-card h4 {
+        margin: 0 0 10px 0;
+        color: #343a40;
+    }
+
+    .mood-chart {
+        height: 150px;
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+    }
+
+    .mood-bar {
+        flex: 1;
+        background: #007bff;
+        min-height: 1px;
+        transition: height 0.3s ease;
+    }
+
+    .no-data {
+        text-align: center;
+        color: #666;
+        padding: 20px;
+    }
+    </style>
+</body>
+</html> 
