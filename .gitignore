@@ -41,4 +41,7 @@ Thumbs.db
 
 # Local development
 instance/
-.webassets-cache 
+.webassets-cache
+
+# Node.js
+node_modules/ 
