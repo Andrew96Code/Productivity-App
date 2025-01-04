@@ -1,9 +1,9 @@
 -- First, disable row level security if it exists
 do $$ 
 begin
-    execute 'alter table if exists points_log disable row level security';
-    execute 'alter table if exists user_quiz_responses disable row level security';
     execute 'alter table if exists daily_logs disable row level security';
+    execute 'alter table if exists user_quiz_responses disable row level security';
+    execute 'alter table if exists points_log disable row level security';
     execute 'alter table if exists goals disable row level security';
 exception when others then null;
 end $$;
@@ -11,14 +11,14 @@ end $$;
 -- Drop existing policies
 do $$ 
 begin
-    execute 'drop policy if exists "Users can view their own logs" on daily_logs';
-    execute 'drop policy if exists "Users can insert their own logs" on daily_logs';
-    execute 'drop policy if exists "Users can view their own quiz responses" on user_quiz_responses';
-    execute 'drop policy if exists "Users can insert their own quiz responses" on user_quiz_responses';
-    execute 'drop policy if exists "Users can view their own points" on points_log';
-    execute 'drop policy if exists "Users can insert their own points" on points_log';
-    execute 'drop policy if exists "Users can view their own goals" on goals';
-    execute 'drop policy if exists "Users can manage their own goals" on goals';
+    execute format('drop policy if exists %I on daily_logs', 'Users can view their own logs');
+    execute format('drop policy if exists %I on daily_logs', 'Users can insert their own logs');
+    execute format('drop policy if exists %I on user_quiz_responses', 'Users can view their own quiz responses');
+    execute format('drop policy if exists %I on user_quiz_responses', 'Users can insert their own quiz responses');
+    execute format('drop policy if exists %I on points_log', 'Users can view their own points');
+    execute format('drop policy if exists %I on points_log', 'Users can insert their own points');
+    execute format('drop policy if exists %I on goals', 'Users can view their own goals');
+    execute format('drop policy if exists %I on goals', 'Users can manage their own goals');
 exception when others then null;
 end $$;
 
@@ -26,15 +26,15 @@ end $$;
 do $$ 
 begin
     -- First drop foreign key constraints
-    alter table if exists user_quiz_responses drop constraint if exists user_quiz_responses_quiz_id_fkey;
-    alter table if exists user_quiz_responses drop constraint if exists user_quiz_responses_user_id_fkey;
+    alter table if exists quiz_responses drop constraint if exists quiz_responses_quiz_id_fkey;
+    alter table if exists quiz_responses drop constraint if exists quiz_responses_user_id_fkey;
     alter table if exists points_log drop constraint if exists points_log_user_id_fkey;
     alter table if exists daily_logs drop constraint if exists daily_logs_user_id_fkey;
     alter table if exists goals drop constraint if exists goals_user_id_fkey;
     
     -- Then drop tables
     drop table if exists points_log cascade;
-    drop table if exists user_quiz_responses cascade;
+    drop table if exists quiz_responses cascade;
     drop table if exists quizzes cascade;
     drop table if exists daily_logs cascade;
     drop table if exists goals cascade;
@@ -67,18 +67,40 @@ create table if not exists daily_logs (
     user_id uuid references auth.users(id) not null,
     content text not null,
     mood text not null,
+    log_date date not null default current_date,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-    unique(user_id, date(created_at))
+    unique(user_id, log_date)
 );
+
+-- Remove this redundant index
+-- create unique index daily_logs_user_date_idx on daily_logs(user_id, date(created_at));
+
+-- Drop existing tables if they exist
+drop table if exists points_log cascade;
 
 create table if not exists points_log (
     id uuid default uuid_generate_v4() primary key,
     user_id uuid references auth.users(id) not null,
     points integer not null,
     reason text not null,
-    category text not null,
+    category text not null check (category in ('goal_completion', 'habit_streak', 'achievement', 'reward_redemption', 'focus_session', 'journal')),
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+
+-- Create indexes for better query performance
+create index if not exists points_log_user_id_created_at_idx on points_log(user_id, created_at);
+
+-- Enable Row Level Security (RLS)
+alter table points_log enable row level security;
+
+-- Create policies
+create policy "Users can view their own points"
+    on points_log for select
+    using (auth.uid() = user_id);
+
+create policy "Users can insert their own points"
+    on points_log for insert
+    with check (auth.uid() = user_id);
 
 create table if not exists goals (
     id uuid default uuid_generate_v4() primary key,
@@ -113,9 +135,13 @@ create table if not exists habit_logs (
     habit_id uuid references habits(id) not null,
     user_id uuid references auth.users(id) not null,
     value integer,
+    log_date date not null default current_date,
     completed_at timestamp with time zone default timezone('utc'::text, now()) not null,
-    unique(habit_id, date(completed_at))
+    unique(habit_id, log_date)
 );
+
+-- Remove this redundant index
+-- create unique index habit_logs_habit_date_idx on habit_logs(habit_id, date(completed_at));
 
 create table if not exists transactions (
     id uuid default uuid_generate_v4() primary key,
@@ -147,13 +173,13 @@ insert into quizzes (question, options, correct_answer) values
      'Regular exercise');
 
 -- Create indexes for better query performance
-create index if not exists daily_logs_user_id_date_idx on daily_logs(user_id, date);
-create index if not exists user_quiz_responses_user_id_idx on user_quiz_responses(user_id);
+create index if not exists daily_logs_user_id_log_date_idx on daily_logs(user_id, log_date);
+create index if not exists quiz_responses_user_id_idx on quiz_responses(user_id);
 create index if not exists points_log_user_id_created_at_idx on points_log(user_id, created_at);
 
 -- Enable Row Level Security (RLS) policies
 alter table daily_logs enable row level security;
-alter table user_quiz_responses enable row level security;
+alter table quiz_responses enable row level security;
 alter table points_log enable row level security;
 
 -- Create policies
@@ -166,11 +192,11 @@ create policy "Users can insert their own logs"
     with check (auth.uid() = user_id);
 
 create policy "Users can view their own quiz responses"
-    on user_quiz_responses for select
+    on quiz_responses for select
     using (auth.uid() = user_id);
 
 create policy "Users can insert their own quiz responses"
-    on user_quiz_responses for insert
+    on quiz_responses for insert
     with check (auth.uid() = user_id);
 
 create policy "Users can view their own points"

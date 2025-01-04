@@ -1,10 +1,11 @@
 'use client'
 
+import { PrizeDraws } from '@/components/community/PrizeDraws'
+
 export default function CommunityPage() {
   return (
-    <div className="container mx-auto p-4">
-      <h1>Community</h1>
-      {/* Community content will go here */}
+    <div className="container mx-auto p-4 space-y-8">
+      <PrizeDraws />
     </div>
   )
 }

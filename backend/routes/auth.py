@@ -86,10 +86,7 @@ def login():
         serialized_response = serialize_auth_response(response)
         print(f"Login response: {serialized_response}")  # Debug log
         
-        return jsonify({
-            "message": "Login successful", 
-            "data": serialized_response
-        }), 200
+        return jsonify(serialized_response), 200
     except Exception as e:
         print(f"Login error: {str(e)}")  # Debug log
         return jsonify({"error": str(e)}), 401 

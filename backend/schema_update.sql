@@ -1,3 +1,16 @@
+-- Drop existing tables in reverse dependency order
+do $$ 
+begin
+    execute 'drop table if exists user_achievements cascade';
+    execute 'drop table if exists achievements cascade';
+    execute 'drop table if exists reward_redemptions cascade';
+    execute 'drop table if exists rewards cascade';
+    execute 'drop table if exists prize_draw_entries cascade';
+    execute 'drop table if exists prize_draws cascade';
+    execute 'drop table if exists transactions cascade';
+exception when others then null;
+end $$;
+
 -- Disable RLS temporarily
 do $$ 
 begin
@@ -69,9 +82,9 @@ create table if not exists achievements (
     title text not null,
     description text,
     category text not null,
-    points_reward integer not null,
-    requirement_type text not null,
+    requirement_type text not null check (requirement_type in ('streak', 'count', 'total', 'milestone')),
     requirement_value integer not null,
+    points_reward integer not null,
     badge_icon text,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -102,6 +115,23 @@ alter table reward_redemptions enable row level security;
 alter table achievements enable row level security;
 alter table user_achievements enable row level security;
 
+-- Drop existing policies
+do $$ 
+begin
+    execute 'drop policy if exists "Users can view their own transactions" on transactions';
+    execute 'drop policy if exists "Users can manage their own transactions" on transactions';
+    execute 'drop policy if exists "Anyone can view active prize draws" on prize_draws';
+    execute 'drop policy if exists "Users can view their own draw entries" on prize_draw_entries';
+    execute 'drop policy if exists "Users can enter draws" on prize_draw_entries';
+    execute 'drop policy if exists "Anyone can view rewards" on rewards';
+    execute 'drop policy if exists "Users can view their own redemptions" on reward_redemptions';
+    execute 'drop policy if exists "Users can redeem rewards" on reward_redemptions';
+    execute 'drop policy if exists "Anyone can view achievements" on achievements';
+    execute 'drop policy if exists "Users can view their own achievement progress" on user_achievements';
+    execute 'drop policy if exists "System can update user achievements" on user_achievements';
+exception when others then null;
+end $$;
+
 -- Create RLS policies
 create policy "Users can view their own transactions"
     on transactions for select
@@ -114,6 +144,10 @@ create policy "Users can manage their own transactions"
 create policy "Anyone can view active prize draws"
     on prize_draws for select
     using (status = 'active' and end_date > now());
+
+create policy "System can manage prize draws"
+    on prize_draws for all
+    using (true);
 
 create policy "Users can view their own draw entries"
     on prize_draw_entries for select

@@ -360,7 +360,7 @@ create table skill_nodes (
     requirements jsonb not null,
     benefits jsonb not null,
     position jsonb not null,
-    parent_nodes uuid[] references skill_nodes(id)[],
+    parent_nodes uuid[],
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -912,11 +912,18 @@ create table learning_modules (
     title text not null,
     description text not null,
     category text not null,
-    resources uuid[] references learning_resources(id)[],
     sequence_order integer not null,
     completion_criteria jsonb not null,
     points integer not null default 0,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+create table module_resources (
+    module_id uuid references learning_modules(id) not null,
+    resource_id uuid references learning_resources(id) not null,
+    sequence_order integer not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    primary key (module_id, resource_id)
 );
 
 create table user_learning_progress (
@@ -973,11 +980,18 @@ create table learning_paths (
     title text not null,
     description text not null,
     target_skills text[],
-    modules uuid[] references learning_modules(id)[],
     prerequisites jsonb,
     estimated_completion_time interval,
     certification_criteria jsonb,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+create table path_modules (
+    path_id uuid references learning_paths(id) not null,
+    module_id uuid references learning_modules(id) not null,
+    sequence_order integer not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    primary key (path_id, module_id)
 );
 
 create table user_certifications (

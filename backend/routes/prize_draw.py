@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, timezone
-from backend.config import get_supabase_client
+from ..config import get_supabase_client
 import random
 
 prize_draw_bp = Blueprint('prize_draw', __name__)
@@ -203,4 +203,85 @@ def cancel_draw(draw_id):
             'data': response.data[0]
         })
     except Exception as e:
-        return jsonify({'error': str(e)}), 500 
+        return jsonify({'error': str(e)}), 500
+
+@prize_draw_bp.route('/entry', methods=['POST'])
+def create_entry():
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        time_period = data.get('time_period')
+        
+        if not user_id or not time_period:
+            return jsonify({'error': 'User ID and time period are required'}), 400
+            
+        supabase = get_supabase_client()
+        
+        # Check if user already has an entry for this time period today
+        today = datetime.now().date().isoformat()
+        existing_entry = supabase.table('prize_draw_entries').select('*').eq('user_id', user_id).eq('time_period', time_period).gte('created_at', today).execute()
+        
+        if existing_entry.data:
+            return jsonify({'error': 'Entry already exists for this time period today'}), 400
+        
+        # Create new entry
+        entry_data = {
+            'user_id': user_id,
+            'time_period': time_period,
+            'created_at': datetime.now().isoformat()
+        }
+        
+        result = supabase.table('prize_draw_entries').insert(entry_data).execute()
+        
+        # Award points for completing all tasks
+        points_data = {
+            'user_id': user_id,
+            'points': 50,  # Award 50 points for completing all tasks in a time period
+            'reason': f'Completed all tasks - {time_period}',
+            'created_at': datetime.now().isoformat()
+        }
+        supabase.table('points_history').insert(points_data).execute()
+        
+        return jsonify({
+            'message': 'Prize draw entry created successfully',
+            'data': result.data[0]
+        }), 201
+        
+    except Exception as e:
+        print(f"Error creating prize draw entry: {str(e)}")
+        return jsonify({'error': 'Failed to create prize draw entry'}), 500
+
+@prize_draw_bp.route('/entries', methods=['GET'])
+def get_entries():
+    try:
+        user_id = request.args.get('user_id')
+        if not user_id:
+            return jsonify({'error': 'User ID is required'}), 400
+            
+        supabase = get_supabase_client()
+        
+        # Get entries for the current month
+        start_date = datetime.now().replace(day=1).date().isoformat()
+        result = supabase.table('prize_draw_entries').select('*').eq('user_id', user_id).gte('created_at', start_date).execute()
+        
+        entries_by_period = {
+            'morning': 0,
+            'afternoon': 0,
+            'evening': 0
+        }
+        
+        for entry in result.data:
+            period = entry['time_period']
+            if period in entries_by_period:
+                entries_by_period[period] += 1
+        
+        return jsonify({
+            'data': {
+                'entries': result.data,
+                'summary': entries_by_period
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error getting prize draw entries: {str(e)}")
+        return jsonify({'error': 'Failed to get prize draw entries'}), 500 
