@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Daily Productivity App</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute inset-0 z-0">
+            <div class="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+            <div class="absolute bottom-0 right-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-100"></div>
+        </div>
+
+        <div class="max-w-6xl w-full space-y-8 relative z-10">
+            <div class="text-center transform hover-lift">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Welcome Back</h2>
+                <p class="text-xl text-gray-600 mb-8">Sign in to continue your productivity journey</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Login Form -->
+                <div class="login-form p-8 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">Login</h2>
+                    <div id="loginError" class="hidden error-message mb-4 p-3 bg-red-100 text-red-700 rounded"></div>
+                    <form onsubmit="login(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="loginEmail">Email</label>
+                            <input type="email" id="loginEmail" name="loginEmail" class="w-full px-3 py-2 border rounded-lg hover-lift" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" name="loginPassword" class="w-full px-3 py-2 border rounded-lg hover-lift" required>
+                        </div>
+                        <button type="submit" id="loginButton" class="w-full py-2 px-4 rounded-lg text-white font-semibold shadow-md" style="background: var(--primary-gradient)">Login</button>
+                    </form>
+                </div>
+
+                <!-- Sign Up Form -->
+                <div class="signup-form p-8 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-green-500 to-teal-500">Sign Up</h2>
+                    <div id="signupError" class="hidden error-message mb-4 p-3 bg-red-100 text-red-700 rounded"></div>
+                    <form onsubmit="signup(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="signupEmail">Email</label>
+                            <input type="email" id="signupEmail" name="signupEmail" class="w-full px-3 py-2 border rounded-lg hover-lift" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="signupPassword">Password</label>
+                            <input type="password" id="signupPassword" name="signupPassword" class="w-full px-3 py-2 border rounded-lg hover-lift" minlength="6" required>
+                            <p class="text-sm text-gray-600 mt-1">Password must be at least 6 characters long</p>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">Daily Schedule Preferences</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="hover-lift">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="morningTime">Morning Routine</label>
+                                    <input type="time" id="morningTime" name="morningTime" class="w-full px-3 py-2 border rounded-lg" value="05:00" required>
+                                </div>
+                                <div class="hover-lift">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="afternoonTime">Afternoon Check-in</label>
+                                    <input type="time" id="afternoonTime" name="afternoonTime" class="w-full px-3 py-2 border rounded-lg" value="12:00" required>
+                                </div>
+                                <div class="hover-lift md:col-span-2">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="eveningTime">Evening Review</label>
+                                    <input type="time" id="eveningTime" name="eveningTime" class="w-full px-3 py-2 border rounded-lg" value="17:00" required>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600">Set your preferred times for daily reviews</p>
+                        </div>
+                        
+                        <button type="submit" id="signupButton" class="w-full py-2 px-4 rounded-lg text-white font-semibold shadow-md" style="background: var(--secondary-gradient)">Create Account</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="text-center mt-8">
+                <a href="/" class="inline-block hover-lift text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500 font-medium">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load scripts -->
+    <script src="{{ url_for('static', filename='js/auth.js') }}" type="text/javascript"></script>
+</body>
+</html> 

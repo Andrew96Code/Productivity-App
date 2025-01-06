@@ -1,44 +1,218 @@
-/* Custom styles */
-.hidden {
-    display: none !important;
+/* Modern Color Palette */
+:root {
+    --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    --secondary-gradient: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
+    --morning-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    --afternoon-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    --evening-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+    --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    --hover-transform: translateY(-5px);
 }
 
-/* Loading spinner animation */
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+/* Global Styles */
+body {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
 }
 
-.animate-spin {
-    animation: spin 1s linear infinite;
+/* 3D Card Effect */
+.shadow-md {
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
-/* Tab styles */
+.shadow-md:hover {
+    transform: var(--hover-transform);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Navigation */
+nav {
+    background: var(--primary-gradient);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+nav a.text-blue-600 {
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Buttons */
+button {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+button:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(255,255,255,0.2), transparent);
+    pointer-events: none;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Time Period Badges */
+#morningBadge {
+    background: var(--morning-gradient);
+    transform-style: preserve-3d;
+    transition: all 0.3s ease;
+}
+
+#timePeriodBadge {
+    background: var(--afternoon-gradient);
+    transform-style: preserve-3d;
+    transition: all 0.3s ease;
+}
+
+#eveningBadge {
+    background: var(--evening-gradient);
+    transform-style: preserve-3d;
+    transition: all 0.3s ease;
+}
+
+.badge-3d {
+    transform: translateZ(20px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Tab Buttons */
 .tab-button {
     position: relative;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
 }
 
-.tab-button.active {
-    color: #3B82F6;
-    border-color: #3B82F6;
+.tab-button:before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--primary-gradient);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
 }
 
-.tab-button:hover:not(.active) {
-    color: #4B5563;
-    border-color: #E5E7EB;
+.tab-button:hover:before,
+.tab-button.active:before {
+    transform: scaleX(1);
 }
 
-/* Form styles */
+/* Form Inputs */
+input {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
 input:focus {
-    outline: none;
-    border-color: #3B82F6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    transform: translateY(-1px);
 }
 
-/* Button loading state */
-button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+/* Progress Bar Animation */
+@keyframes progressFill {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+#progressBar {
+    transform-origin: left;
+    animation: progressFill 1s ease-out forwards;
+}
+
+/* Card Content */
+.tab-content {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+/* Loading Animation */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.loading {
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* Hover Effects */
+.hover-lift {
+    transition: transform 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-3px);
+}
+
+/* Task Items */
+.task-item {
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.task-item:hover {
+    border-left-color: #6366f1;
+    transform: translateX(5px);
+}
+
+/* Checkbox Animation */
+@keyframes checkmark {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+input[type="checkbox"]:checked + label:before {
+    animation: checkmark 0.3s ease-out forwards;
+}
+
+/* Login/Signup Forms */
+.login-form, .signup-form {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transform-style: preserve-3d;
+    transition: all 0.3s ease;
+}
+
+.login-form:hover, .signup-form:hover {
+    transform: translateY(-5px) rotateX(5deg);
+}
+
+/* Error Messages */
+.error-message {
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Success Messages */
+.success-message {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 } 

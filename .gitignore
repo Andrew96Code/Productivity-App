@@ -22,9 +22,8 @@ wheels/
 
 # Virtual Environment
 venv/
-ENV/
 env/
-.env
+ENV/
 
 # IDE
 .idea/
@@ -32,16 +31,47 @@ env/
 *.swp
 *.swo
 
-# OS
-.DS_Store
-Thumbs.db
+# Testing
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite3
 
 # Logs
 *.log
+logs/
+log/
 
-# Local development
-instance/
-.webassets-cache
+# System Files
+.DS_Store
+Thumbs.db
 
-# Node.js
-node_modules/ 
+# Distribution / packaging
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Locust
+locust-report.html 
+node_modules

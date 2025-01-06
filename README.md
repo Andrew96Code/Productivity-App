@@ -1,29 +1,28 @@
 # Productivity App
 
-A comprehensive productivity application with features for task management, reporting, analytics, and more.
+A modern web application for tracking daily habits, focus, and personal productivity with morning routines, afternoon check-ins, and evening reviews.
 
 ## Features
 
-- User Authentication (using Supabase)
-- Reporting System
-- Analytics Dashboard
-- Task Management
-- Goal Tracking
-- Habit Formation
-- Progress Visualization
+- User authentication and authorization
+- Morning routine planning
+- Afternoon check-ins
+- Evening reviews
+- Habit tracking across multiple categories
+- Focus and productivity monitoring
+- Modern, responsive UI with animations
+- Admin dashboard for analytics
 
 ## Tech Stack
 
-- Backend:
-  - Python 3.12
-  - Flask 3.0.0
-  - Supabase
-  - PostgreSQL
-  - pandas
-  - matplotlib
-  - seaborn
+- Backend: Python/Flask
+- Database: PostgreSQL
+- Cache: Redis
+- Frontend: HTML, CSS, JavaScript
+- Testing: Pytest, Locust for performance testing
+- CI/CD: GitHub Actions
 
-## Setup
+## Getting Started
 
 1. Clone the repository:
 ```bash
@@ -34,53 +33,54 @@ cd productivity-app
 2. Create and activate a virtual environment:
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
 3. Install dependencies:
 ```bash
-pip install -r backend/requirements.txt
+pip install -r requirements.txt
 ```
 
-4. Create a `.env` file in the backend directory with your Supabase credentials:
-```env
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_key
+4. Set up environment variables:
+Create a `.env` file with the following variables:
+```
+FLASK_APP=backend
 FLASK_ENV=development
-FLASK_APP=main.py
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+SECRET_KEY=your-secret-key
+REDIS_URL=redis://localhost:6379
 ```
 
-5. Run the application:
+5. Initialize the database:
 ```bash
-cd backend
+flask db upgrade
+```
+
+6. Run the development server:
+```bash
 flask run
 ```
 
-The API will be available at `http://127.0.0.1:5000`
+## Testing
 
-## API Endpoints
+Run the test suite:
+```bash
+pytest
+```
 
-### Authentication
-
-- `POST /auth/signup` - Create a new user account
-- `POST /auth/login` - Login and get access token
-
-### Reporting
-
-- `GET /reporting/templates` - Get report templates
-- `POST /reporting/templates` - Create a new report template
-- `GET /reporting/schedules` - Get scheduled reports
-- `POST /reporting/generate` - Generate a report
-- `GET /reporting/exports/<export_id>/download` - Download a report
+Run performance tests:
+```bash
+locust -f performance_tests/locustfile.py
+```
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.

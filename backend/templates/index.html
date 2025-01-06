@@ -6,192 +6,157 @@
     <title>Daily Productivity App</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/prize_draw.js') }}"></script>
 </head>
 <body class="bg-gray-100">
-    <!-- Welcome Section -->
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-xl font-bold text-blue-600">Daily Productivity</a>
+                </div>
+                <div class="flex items-center">
+                    <a href="/login" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="py-20 md:py-28">
+                <div class="text-center">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-6">Transform Your Daily Routine</h1>
+                    <p class="text-xl md:text-2xl mb-8 text-blue-100">Your personal companion for productivity, wellness, and continuous growth.</p>
+                    <div class="flex justify-center space-x-4">
+                        <a href="#features" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
+                            Learn More
+                        </a>
+                        <a href="/login" class="bg-blue-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-400 transition-colors">
+                            Get Started
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div id="features" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Everything You Need to Excel</h2>
+                <p class="text-xl text-gray-600">A comprehensive suite of tools designed to enhance your daily productivity.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Morning Routine -->
+                <div class="bg-gray-50 p-6 rounded-xl">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Morning Routine</h3>
+                    <p class="text-gray-600">Start your day with purpose. Set intentions, plan your focus, and establish daily habits.</p>
+                </div>
+
+                <!-- Afternoon Check-in -->
+                <div class="bg-gray-50 p-6 rounded-xl">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Afternoon Check-in</h3>
+                    <p class="text-gray-600">Stay on track with progress reviews, focus adjustments, and wellness check-ins.</p>
+                </div>
+
+                <!-- Evening Review -->
+                <div class="bg-gray-50 p-6 rounded-xl">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Evening Review</h3>
+                    <p class="text-gray-600">Reflect on achievements, track progress, and prepare for tomorrow's success.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Benefits Section -->
+    <div class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Why Choose Our App?</h2>
+                <p class="text-xl text-gray-600">Designed to help you achieve more while maintaining balance.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Habit Building</h3>
+                    <p class="text-gray-600">Create and maintain positive habits with structured daily routines.</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Enhanced Focus</h3>
+                    <p class="text-gray-600">Stay focused with dedicated time management tools and strategies.</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Personal Growth</h3>
+                    <p class="text-gray-600">Track your progress and celebrate achievements with rewards.</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Wellness Focus</h3>
+                    <p class="text-gray-600">Maintain work-life balance with integrated wellness tracking.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
     <div class="bg-blue-600 text-white py-16">
-        <div class="max-w-6xl mx-auto px-4 text-center">
-            <h1 class="text-4xl font-bold mb-4">Welcome to Daily Productivity</h1>
-            <p class="text-xl mb-8">Track your habits, learn something new, and improve every day.</p>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl font-bold mb-4">Ready to Transform Your Daily Routine?</h2>
+            <p class="text-xl text-blue-100 mb-8">Join thousands of users who have improved their productivity and well-being.</p>
+            <a href="/login" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors inline-block">
+                Get Started Now
+            </a>
         </div>
     </div>
 
-    <!-- Auth Section -->
-    <div class="max-w-6xl mx-auto mt-8 px-4">
-        <div class="grid md:grid-cols-2 gap-8">
-            <!-- Login Form -->
-            <div class="bg-white p-8 rounded-lg shadow-md">
-                <h2 class="text-2xl font-bold mb-6">Login</h2>
-                <div id="loginError" class="hidden mb-4 p-3 bg-red-100 text-red-700 rounded"></div>
-                <form onsubmit="login(event)">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="loginEmail">Email</label>
-                        <input type="email" id="loginEmail" name="loginEmail" class="w-full px-3 py-2 border rounded-lg" required>
-                    </div>
-                    <div class="mb-6">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="loginPassword">Password</label>
-                        <input type="password" id="loginPassword" name="loginPassword" class="w-full px-3 py-2 border rounded-lg" required>
-                    </div>
-                    <button type="submit" id="loginButton" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">Login</button>
-                </form>
-            </div>
-
-            <!-- Sign Up Form -->
-            <div class="bg-white p-8 rounded-lg shadow-md">
-                <h2 class="text-2xl font-bold mb-6">Sign Up</h2>
-                <div id="signupError" class="hidden mb-4 p-3 bg-red-100 text-red-700 rounded"></div>
-                <form onsubmit="signup(event)">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="signupEmail">Email</label>
-                        <input type="email" id="signupEmail" name="signupEmail" class="w-full px-3 py-2 border rounded-lg" required>
-                    </div>
-                    <div class="mb-6">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="signupPassword">Password</label>
-                        <input type="password" id="signupPassword" name="signupPassword" class="w-full px-3 py-2 border rounded-lg" minlength="6" required>
-                        <p class="text-sm text-gray-600 mt-1">Password must be at least 6 characters long</p>
-                    </div>
-                    <button type="submit" id="signupButton" class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">Create Account</button>
-                </form>
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <p>&copy; 2024 Daily Productivity App. All rights reserved.</p>
             </div>
         </div>
-    </div>
-
-    <!-- Main Content (hidden until logged in) -->
-    <div id="mainContent" class="hidden max-w-6xl mx-auto mt-8 px-4">
-        <!-- Progress Bar -->
-        <div class="mb-8">
-            <div class="relative pt-1">
-                <div class="flex mb-2 items-center justify-between">
-                    <div>
-                        <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
-                            Daily Progress
-                        </span>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-xs font-semibold inline-block text-blue-600" id="progressPercentage">
-                            0%
-                        </span>
-                    </div>
-                </div>
-                <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200">
-                    <div id="progressBar" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500" style="width: 0%"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Time Period Indicator -->
-        <div class="mb-8 text-center">
-            <span id="timePeriodBadge" class="inline-block px-4 py-2 rounded-full text-white font-semibold"></span>
-        </div>
-
-        <!-- Tabs -->
-        <div class="mb-4 border-b border-gray-200">
-            <ul class="flex flex-wrap -mb-px" role="tablist">
-                <li class="mr-2">
-                    <button class="tab-button inline-block p-4 border-b-2 rounded-t-lg" data-tab="habits">
-                        Habits & Goals
-                    </button>
-                </li>
-                <li class="mr-2">
-                    <button class="tab-button inline-block p-4 border-b-2 rounded-t-lg" data-tab="focus">
-                        Focus & Time
-                    </button>
-                </li>
-                <li class="mr-2">
-                    <button class="tab-button inline-block p-4 border-b-2 rounded-t-lg" data-tab="learning">
-                        Learning
-                    </button>
-                </li>
-                <li class="mr-2">
-                    <button class="tab-button inline-block p-4 border-b-2 rounded-t-lg" data-tab="wellness">
-                        Wellness
-                    </button>
-                </li>
-                <li class="mr-2">
-                    <button class="tab-button inline-block p-4 border-b-2 rounded-t-lg" data-tab="social">
-                        Social
-                    </button>
-                </li>
-                <li>
-                    <button class="tab-button inline-block p-4 border-b-2 rounded-t-lg" data-tab="rewards">
-                        Rewards
-                    </button>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Tab Content -->
-        <div class="tab-content bg-white p-6 rounded-lg shadow-md">
-            <!-- Navigation Buttons -->
-            <div class="flex justify-between mb-4">
-                <button id="prevButton" class="hidden px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Previous</button>
-                <button id="nextButton" class="hidden px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Next</button>
-            </div>
-            
-            <!-- Tab Content Container -->
-            <div id="tabContent">
-                <!-- Content will be loaded here -->
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let completedTasks = new Set();
-        
-        const taskFlow = [
-            { tab: 'habits', tasks: ['Set daily goals', 'Review habits'] },
-            { tab: 'focus', tasks: ['Plan focus sessions', 'Set priorities'] },
-            { tab: 'learning', tasks: ['Choose learning path', 'Complete daily quiz'] },
-            { tab: 'wellness', tasks: ['Log mood', 'Track wellness activities'] },
-            { tab: 'social', tasks: ['Check team challenges', 'Connect with friends'] },
-            { tab: 'rewards', tasks: ['Review points', 'Check prize draw entries'] }
-        ];
-
-        function updateProgress() {
-            const totalTasks = taskFlow.reduce((sum, section) => sum + section.tasks.length, 0);
-            const progress = (completedTasks.size / totalTasks) * 100;
-            document.getElementById('progressBar').style.width = `${progress}%`;
-            document.getElementById('progressPercentage').textContent = `${Math.round(progress)}%`;
-        }
-
-        function navigateTask(direction) {
-            console.log('Navigating:', direction);
-            const currentTaskSet = taskFlow[currentTaskIndex];
-            
-            if (direction === 'next') {
-                // Check if current tasks are completed
-                const isComplete = checkTaskCompletion(currentTaskSet.tab);
-                console.log('Tasks completed check:', isComplete);
-                
-                if (isComplete) {
-                    // Mark current tasks as completed
-                    currentTaskSet.tasks.forEach(task => completedTasks.add(`${currentTaskSet.tab}-${task}`));
-                    
-                    if (currentTaskIndex < taskFlow.length - 1) {
-                        currentTaskIndex++;
-                        console.log('Moving to next tab:', taskFlow[currentTaskIndex].tab);
-                        switchTab(taskFlow[currentTaskIndex].tab);
-                    } else {
-                        console.log('All tasks completed, adding prize draw entry');
-                        addPrizeDrawEntry();
-                    }
-                    
-                    updateProgress();
-                    updateNavigationButtons();
-                } else {
-                    console.log('Tasks not completed');
-                }
-            } else if (direction === 'prev' && currentTaskIndex > 0) {
-                currentTaskIndex--;
-                console.log('Moving to previous tab:', taskFlow[currentTaskIndex].tab);
-                switchTab(taskFlow[currentTaskIndex].tab);
-                updateProgress();
-                updateNavigationButtons();
-            }
-        }
-    </script>
+    </footer>
 </body>
 </html> 

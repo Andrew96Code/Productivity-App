@@ -23,202 +23,219 @@ const timePeriodsConfig = {
     }
 };
 
-function getCurrentTimePeriod() {
-    const hour = new Date().getHours();
-    for (const [period, config] of Object.entries(timePeriodsConfig)) {
-        if (hour >= config.start && hour < config.end) {
-            return { period, config };
-        }
-    }
-    return { period: 'evening', config: timePeriodsConfig.evening };
-}
+// Add time period colors
+const timePeriodColors = {
+    morning: 'bg-yellow-500',
+    afternoon: 'bg-blue-500',
+    evening: 'bg-purple-500',
+    admin: 'bg-gray-500'
+};
 
+// Update time period indicator
 function updateTimePeriodIndicator() {
-    const { period, config } = getCurrentTimePeriod();
     const badge = document.getElementById('timePeriodBadge');
-    if (badge) {
-        badge.className = `inline-block px-4 py-2 rounded-full text-white font-semibold ${config.color}`;
-        badge.textContent = config.text;
-    }
+    if (!badge) return;
+
+    const period = getCurrentTimePeriod();
+    const color = timePeriodColors[period.period] || 'bg-gray-500';
+    
+    badge.className = `inline-block px-4 py-2 rounded-full text-white font-semibold ${color}`;
+    badge.textContent = period.label;
 }
 
-// Function to show main content and hide login/signup forms
-async function showMainContent() {
-    // Hide welcome section
-    const welcomeSection = document.querySelector('.bg-blue-600');
-    if (welcomeSection) {
-        welcomeSection.classList.add('hidden');
+// Get user preferences
+function getUserPreferences() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return {
+        morning: user.timePreferences?.morning || '05:00',
+        afternoon: user.timePreferences?.afternoon || '12:00',
+        evening: user.timePreferences?.evening || '17:00'
+    };
+}
+
+// Convert time string to hour
+function timeStringToHour(timeString) {
+    return parseInt(timeString.split(':')[0]);
+}
+
+// Get current time period based on user preferences
+function getCurrentTimePeriod() {
+    if (isAdminUser()) {
+        return { period: 'admin', label: 'Admin View' };
     }
     
-    // Hide auth forms
-    const authSection = document.querySelector('.grid.md\\:grid-cols-2');
-    if (authSection) {
-        authSection.classList.add('hidden');
-    }
+    const prefs = getUserPreferences();
+    const hour = new Date().getHours();
     
-    // Show main content
-    const mainContent = document.getElementById('mainContent');
-    if (mainContent) {
-        mainContent.classList.remove('hidden');
-        
-        // Wait for the next frame to ensure DOM is updated
-        await new Promise(resolve => requestAnimationFrame(resolve));
-        
-        // Initialize the interface
-        updateTimePeriodIndicator();
-        
-        // Initialize navigation buttons
-        const prevButton = document.getElementById('prevButton');
-        const nextButton = document.getElementById('nextButton');
-        const tabContent = document.getElementById('tabContent');
-        
-        if (!prevButton || !nextButton || !tabContent) {
-            console.error('Required navigation elements not found. Retrying...');
-            // Retry after a short delay
-            setTimeout(showMainContent, 100);
-            return;
-        }
-        
-        // Initialize tabs
-        switchTab('habits');
-        updateNavigationButtons();
-        updateTabButtons();
-        
-        // Add event listener for rewards tab if the element exists
-        const rewardsTab = document.querySelector('[data-tab="rewards"]');
-        if (rewardsTab && typeof loadRewardsData === 'function') {
-            rewardsTab.addEventListener('click', loadRewardsData);
-        }
-        
-        // Start periodic updates
-        setInterval(updateTimePeriodIndicator, 60000);
+    const morningHour = timeStringToHour(prefs.morning);
+    const afternoonHour = timeStringToHour(prefs.afternoon);
+    const eveningHour = timeStringToHour(prefs.evening);
+    
+    if (hour >= morningHour && hour < afternoonHour) {
+        return { period: 'morning', label: 'Morning Review' };
+    } else if (hour >= afternoonHour && hour < eveningHour) {
+        return { period: 'afternoon', label: 'Afternoon Check-in' };
     } else {
-        console.error('Main content element not found');
+        return { period: 'evening', label: 'Evening Review' };
     }
 }
 
+// Check if user is admin
+function isAdminUser() {
+    try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        return user.email === 'ahkstltd@gmail.com';
+    } catch (error) {
+        console.error('Error checking admin status:', error);
+        return false;
+    }
+}
+
+// Show main content after login
+async function showMainContent() {
+    try {
+        console.log('Showing main content...');
+        
+        // Hide welcome section
+        const welcomeSection = document.querySelector('.bg-blue-600');
+        if (welcomeSection) {
+            console.log('Hiding welcome section');
+            welcomeSection.classList.add('hidden');
+        }
+        
+        // Hide auth section
+        const authSection = document.querySelector('.max-w-6xl.mx-auto.mt-8.px-4');
+        const authForms = authSection.querySelector('.grid.md\\:grid-cols-2');
+        if (authForms) {
+            console.log('Hiding auth forms');
+            authForms.classList.add('hidden');
+        }
+        
+        // Show main content
+        const mainContent = document.getElementById('mainContent');
+        if (mainContent) {
+            console.log('Found main content element, removing hidden class');
+            mainContent.classList.remove('hidden');
+            
+            // Initialize the app
+            console.log('Initializing app after login...');
+            await initializeApp();
+            
+        } else {
+            console.error('Main content element not found');
+        }
+        
+    } catch (error) {
+        console.error('Error showing main content:', error);
+        // Show error message to user
+        const errorDiv = document.getElementById('loginError');
+        if (errorDiv) {
+            errorDiv.textContent = 'Error loading application. Please try refreshing the page.';
+            errorDiv.classList.remove('hidden');
+        }
+    }
+}
+
+// Login function
 async function login(event) {
     event.preventDefault();
     
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
-    const loginButton = document.getElementById('loginButton');
-    const errorDiv = document.getElementById('loginError');
+    const loginError = document.getElementById('loginError');
     
     try {
-        loginButton.disabled = true;
-        loginButton.textContent = 'Logging in...';
-        errorDiv.classList.add('hidden');
-        
-        const response = await fetch('/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email, password })
-        });
-        
-        const data = await response.json();
-        console.log('Login response data:', data); // Debug log
-        
-        if (!response.ok) {
-            throw new Error(data.error || 'Login failed');
+        // Here you would typically make an API call to validate credentials
+        // For demo purposes, we'll use a simple check
+        if (email && password) {
+            const user = {
+                email: email,
+                isLoggedIn: true
+            };
+            localStorage.setItem('user', JSON.stringify(user));
+            
+            // Redirect to app dashboard
+            window.location.href = '/app';
+        } else {
+            throw new Error('Invalid credentials');
         }
-        
-        if (!data.user || !data.session) {
-            throw new Error('Invalid response from server');
-        }
-        
-        // Store user data
-        currentUser = data.user;
-        localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('session', JSON.stringify(data.session));
-        
-        // Show main content
-        showMainContent();
-        
     } catch (error) {
-        console.error('Login error:', error);
-        errorDiv.textContent = error.message || 'An error occurred during login. Please try again.';
-        errorDiv.classList.remove('hidden');
-    } finally {
-        loginButton.disabled = false;
-        loginButton.textContent = 'Login';
+        loginError.textContent = error.message;
+        loginError.classList.remove('hidden');
     }
 }
 
+// Signup function
 async function signup(event) {
     event.preventDefault();
     
     const email = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
-    const signupButton = document.getElementById('signupButton');
-    const errorDiv = document.getElementById('signupError');
+    const morningTime = document.getElementById('morningTime').value;
+    const afternoonTime = document.getElementById('afternoonTime').value;
+    const eveningTime = document.getElementById('eveningTime').value;
+    const signupError = document.getElementById('signupError');
     
     try {
-        signupButton.disabled = true;
-        signupButton.textContent = 'Creating Account...';
-        errorDiv.classList.add('hidden');
+        // Validate time sequence
+        const morningHour = timeStringToHour(morningTime);
+        const afternoonHour = timeStringToHour(afternoonTime);
+        const eveningHour = timeStringToHour(eveningTime);
         
-        const response = await fetch('/auth/signup', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email, password })
-        });
-        
-        const data = await response.json();
-        console.log('Signup response data:', data); // Debug log
-        
-        if (!response.ok) {
-            throw new Error(data.error || 'Signup failed');
+        if (morningHour >= afternoonHour || afternoonHour >= eveningHour) {
+            throw new Error('Times must be in sequence: Morning < Afternoon < Evening');
         }
         
-        if (!data.data || !data.data.user || !data.data.session) {
-            throw new Error('Invalid response from server');
+        // Here you would typically make an API call to create account
+        // For demo purposes, we'll use a simple check
+        if (email && password && password.length >= 6) {
+            const user = {
+                email: email,
+                isLoggedIn: true,
+                timePreferences: {
+                    morning: morningTime,
+                    afternoon: afternoonTime,
+                    evening: eveningTime
+                }
+            };
+            localStorage.setItem('user', JSON.stringify(user));
+            
+            // Redirect to app dashboard
+            window.location.href = '/app';
+        } else {
+            throw new Error('Invalid signup details');
         }
-        
-        // Store user data
-        currentUser = data.data.user;
-        localStorage.setItem('user', JSON.stringify(data.data.user));
-        localStorage.setItem('session', JSON.stringify(data.data.session));
-        
-        // Show main content
-        showMainContent();
-        
     } catch (error) {
-        console.error('Signup error:', error);
-        errorDiv.textContent = error.message || 'An error occurred during signup. Please try again.';
-        errorDiv.classList.remove('hidden');
-    } finally {
-        signupButton.disabled = false;
-        signupButton.textContent = 'Create Account';
+        signupError.textContent = error.message;
+        signupError.classList.remove('hidden');
     }
 }
 
-// Check for existing session on page load
-document.addEventListener('DOMContentLoaded', () => {
-    const storedUser = localStorage.getItem('user');
-    const storedSession = localStorage.getItem('session');
+// Logout function
+function logout() {
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+}
+
+// Check auth state on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const currentPath = window.location.pathname;
     
-    if (storedUser && storedSession) {
-        try {
-            currentUser = JSON.parse(storedUser);
-            const session = JSON.parse(storedSession);
-            
-            // Check if session is still valid
-            if (session.expires_at && new Date(session.expires_at) > new Date()) {
-                showMainContent();
-            } else {
-                // Clear invalid session
-                localStorage.removeItem('user');
-                localStorage.removeItem('session');
-            }
-        } catch (error) {
-            console.error('Error restoring session:', error);
-            localStorage.removeItem('user');
-            localStorage.removeItem('session');
+    // Redirect logic
+    if (user.isLoggedIn) {
+        // If logged in and on login page, redirect to app dashboard
+        if (currentPath === '/login') {
+            window.location.href = '/app';
+        }
+        // If logged in and on landing page, redirect to app dashboard
+        else if (currentPath === '/') {
+            window.location.href = '/app';
+        }
+    } else {
+        // If not logged in and trying to access app, redirect to login
+        if (currentPath === '/app') {
+            window.location.href = '/login';
         }
     }
 }); 
